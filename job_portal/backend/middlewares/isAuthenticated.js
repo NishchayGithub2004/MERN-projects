@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken"; // import the jsonwebtoken library to handle cre
 
 const isAuthenticated = async (req, res, next) => { // define an asynchronous middleware function isAuthenticated to verify if a user is authenticated based on a JWT token
     try { // start a try block to handle potential runtime errors
-        const token = req.cookies.token; // extract the JWT token from the cookies of the incoming request object
+        const token = req.cookies.token; // extract the JWT token from the cookies of the incoming request object for authentication
 
         if (!token) { // check if the token does not exist
             return res.status(401).json({ // return a 401 Unauthorized response if there is no token
