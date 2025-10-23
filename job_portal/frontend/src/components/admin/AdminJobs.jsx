@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react' // import React along with useEffect for side effects and useState for state management
 import Navbar from '../shared/Navbar' // import Navbar component for displaying top navigation
-import { Input } from '../ui/input' // import Input component from the UI library
-import { Button } from '../ui/button' // import Button component from the UI library
+import { Input } from '../ui/input' // import Input component from the UI library for user input in form fields
+import { Button } from '../ui/button' // import Button component from the UI library to create clickable buttons
 import { useNavigate } from 'react-router-dom' // import useNavigate hook to programmatically change routes
 import { useDispatch } from 'react-redux' // import useDispatch hook to send actions to the Redux store
 import AdminJobsTable from './AdminJobsTable' // import AdminJobsTable component that lists all admin jobs
@@ -23,7 +23,7 @@ const AdminJobs = () => { // define a function component named AdminJobs that ma
                 input // pass current input value as argument to update search filter
             )
         );
-    }, [input]); // re-run effect every time 'input' state changes
+    }, [input]); // re-run effect every time 'input' state changes by writing 'input' in dependency array
 
     return (
         <div>
