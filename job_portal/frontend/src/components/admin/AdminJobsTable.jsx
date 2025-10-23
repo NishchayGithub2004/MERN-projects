@@ -6,30 +6,26 @@ import { useSelector } from 'react-redux' // import useSelector hook to access R
 import { useNavigate } from 'react-router-dom' // import useNavigate hook to programmatically navigate between routes
 
 const AdminJobsTable = () => { // define a function component AdminJobsTable to display and filter admin jobs
-    const { allAdminJobs, searchJobByText } = useSelector( // destructure Redux store values using useSelector hook
-        store => store.job // access job slice from Redux store to get allAdminJobs and searchJobByText
-    );
+    const { allAdminJobs, searchJobByText } = useSelector(store => store.job); // access job slice from Redux store to get 'allAdminJobs' array and 'searchJobByText' string from the slice
 
-    const [filterJobs, setFilterJobs] = useState(allAdminJobs); // define state variable 'filterJobs' initialized with allAdminJobs to store filtered job list
+    const [filterJobs, setFilterJobs] = useState(allAdminJobs); // define state variable 'filterJobs' initialized with 'allAdminJobs' to store filtered job list
     
     const navigate = useNavigate(); // call useNavigate to get function for redirecting to different routes
 
     useEffect(() => { // define side effect to update filtered jobs whenever jobs or search text changes
-        console.log('called'); // log to console whenever filtering logic executes
-        
-        const filteredJobs = allAdminJobs.filter((job) => { // create a filtered list of jobs using array filter method
-            if (!searchJobByText) { // check if search text is empty
+        const filteredJobs = allAdminJobs.filter((job) => { // create a filtered list of jobs using array filter method, iterate every element of 'allAdminJobs' array as 'job'
+            if (!searchJobByText) { // check if search text is empty ie no search filter is applied
                 return true; // return all jobs if no search filter is applied
             };
 
-            return ( // return true if job title or company name includes the search text
-                job?.title?.toLowerCase().includes(searchJobByText.toLowerCase()) || // check if job title matches search text case-insensitively
-                job?.company?.name.toLowerCase().includes(searchJobByText.toLowerCase()) // check if company name matches search text case-insensitively
+            return (
+                job?.title?.toLowerCase().includes(searchJobByText.toLowerCase()) || // check if job title contains search text (convert both to lower-case to disable case sensitivity)
+                job?.company?.name.toLowerCase().includes(searchJobByText.toLowerCase()) // check if company name contains search text (convert both to lower-case to disable case sensitivity)
             );
         });
         
-        setFilterJobs(filteredJobs); // update state with filtered job list so UI re-renders accordingly
-    }, [allAdminJobs, searchJobByText]) // run this effect whenever jobs data or search text changes
+        setFilterJobs(filteredJobs); // update 'filterJobs' to 'filteredJobs'
+    }, [allAdminJobs, searchJobByText]) // run this effect whenever jobs data or search text changes by writing both 'allAdminJobs' and 'searchJobByText' in dependency array
     
     return (
         <div>
@@ -51,7 +47,7 @@ const AdminJobsTable = () => { // define a function component AdminJobsTable to 
                                 <TableCell>{job?.title}</TableCell>
                                 <TableCell>{job?.createdAt.split("T")[0]}</TableCell> 
                                 <TableCell className="text-right cursor-pointer">
-                                    <Popover> 
+                                    <Popover>
                                         <PopoverTrigger><MoreHorizontal /></PopoverTrigger> 
                                         <PopoverContent className="w-32">
                                             <div 
