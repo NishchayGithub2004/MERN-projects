@@ -1,34 +1,30 @@
-import BuyCourseButton from "@/components/BuyCourseButton"; // import custom button component to buy course
-import { Button } from "@/components/ui/button"; // import Button component for actions like continue course
-import { 
-    Card, 
-    CardContent, 
-    CardDescription, 
-    CardFooter, 
-    CardHeader, 
-    CardTitle 
-} from "@/components/ui/card"; // import Card components to structure course content
+import BuyCourseButton from "@/components/BuyCourseButton"; // import 'BuyCourseButton' component
+import { Button } from "@/components/ui/button"; // import 'Button' component from shadCN UI library
+import {  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"; // import these card related components from shadCN UI library
 import { Separator } from "@/components/ui/separator"; // import Separator component to divide sections visually
-import { useGetCourseDetailWithStatusQuery } from "@/features/api/purchaseApi"; // import RTK query hook to fetch course details with purchase status
-import { BadgeInfo, Lock, PlayCircle } from "lucide-react"; // import icons for course info, locked lectures, and play button
-import React from "react"; // import React for JSX support
+import { useGetCourseDetailWithStatusQuery } from "@/features/api/purchaseApi"; // import 'useGetCourseDetailWithStatusQuery' hook to manage course purchase related states
+import { BadgeInfo, Lock, PlayCircle } from "lucide-react"; // import these icons from lucide-react library
+import React from "react";
 import ReactPlayer from "react-player"; // import ReactPlayer for embedding course videos
 import { useNavigate, useParams } from "react-router-dom"; // import hooks for route params and navigation
 
-const CourseDetail = () => { // define a function CourseDetail to render course information and content
-    const params = useParams(); // get route parameters from URL
-    const courseId = params.courseId; // extract courseId from params
-    const navigate = useNavigate(); // initialize navigate function for programmatic navigation
-    const { data, isLoading, isError } = useGetCourseDetailWithStatusQuery(courseId); // fetch course details and purchase status using RTK query
+const CourseDetail = () => { // define a functional component named 'CourseDetail' that doesn't take any prop
+    const params = useParams(); // create an instance of 'useParams' hook to extract URL routes and their values
+    
+    const courseId = params.courseId; // extract value of 'courseId' parameter from URL
+    
+    const navigate = useNavigate(); // create an instance of 'useNavigate' hook to navigate programmatically
+    
+    const { data, isLoading, isError } = useGetCourseDetailWithStatusQuery(courseId); // extract these things from 'useGetCourseDetailWithStatusQuery' hook with 'courseId' as argument
 
-    if (isLoading) return <h1>Loading...</h1>; // show loading message while data is being fetched
-    if (isError) return <h>Failed to load course details</h>; // show error message if fetching fails
+    if (isLoading) return <h1>Loading...</h1>; // if 'isLoading' is true, return this heading
+    
+    if (isError) return <h1>Failed to load course details</h1>; // if 'isError' is true, return this heading
 
-    const { course, purchased } = data; // destructure course details and purchase status from fetched data
-    console.log(purchased); // log purchase status for debugging
+    const { course, purchased } = data; // extract 'course' and 'purchased' from 'data' object
 
-    const handleContinueCourse = () => { // define a function to handle continuing the course
-        if (purchased) { // check if the course is purchased
+    const handleContinueCourse = () => { // define a function named 'handeContinueCourse'
+        if (purchased) { // if value of 'purchased' is true ie course is purchased
             navigate(`/course-progress/${courseId}`) // navigate to course progress page
         }
     }
@@ -40,7 +36,7 @@ const CourseDetail = () => { // define a function CourseDetail to render course 
                     <h1 className="font-bold text-2xl md:text-3xl">
                         {course?.courseTitle} {/* display course title if available */}
                     </h1>
-                    <p className="text-base md:text-lg">Course Sub-title</p> {/* placeholder subtitle */}
+                    <p className="text-base md:text-lg">Course Sub-title</p>
                     <p>
                         Created By{" "}
                         <span className="text-[#C0C4FC] underline italic">
@@ -48,10 +44,10 @@ const CourseDetail = () => { // define a function CourseDetail to render course 
                         </span>
                     </p>
                     <div className="flex items-center gap-2 text-sm">
-                        <BadgeInfo size={16} /> {/* show info icon for last updated date */}
-                        <p>Last updated {course?.createdAt.split("T")[0]}</p> {/* format and display last updated date */}
+                        <BadgeInfo size={16} />
+                        <p>Last updated {course?.createdAt.split("T")[0]}</p>
                     </div>
-                    <p>Students enrolled: {course?.enrolledStudents.length} {/* display number of enrolled students */}</p>
+                    <p>Students enrolled: {course?.enrolledStudents.length}</p> {/* display number of enrolled students */}
                 </div>
             </div>
             <div className="max-w-7xl mx-auto my-5 px-4 md:px-8 flex flex-col lg:flex-row justify-between gap-10">
@@ -63,8 +59,7 @@ const CourseDetail = () => { // define a function CourseDetail to render course 
                     />
                     <Card>
                         <CardHeader>
-                            <CardTitle>Course Content</CardTitle> {/* display course content section title */}
-                            <CardDescription>4 lectures</CardDescription> {/* display total number of lectures */}
+                            <CardTitle>Course Content</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {course.lectures.map((lecture, idx) => (
@@ -72,7 +67,7 @@ const CourseDetail = () => { // define a function CourseDetail to render course 
                                     <span>
                                         {true ? <PlayCircle size={14} /> : <Lock size={14} />} {/* show play icon if lecture accessible, lock icon if not */}
                                     </span>
-                                    <p>{lecture.lectureTitle} {/* display lecture title */}</p>
+                                    <p>{lecture.lectureTitle}</p> {/* display lecture title */}
                                 </div>
                             ))}
                         </CardContent>
@@ -89,20 +84,20 @@ const CourseDetail = () => { // define a function CourseDetail to render course 
                                     controls={true} // enable video controls
                                 />
                             </div>
-                            <h1>Lecture title</h1> {/* placeholder lecture title */}
-                            <Separator className="my-2" /> {/* separate sections visually */}
-                            <h1 className="text-lg md:text-xl font-semibold">Course Price</h1> {/* display course price section title */}
+                            <h1>Lecture title</h1>
+                            <Separator className="my-2" />
+                            <h1 className="text-lg md:text-xl font-semibold">Course Price</h1>
                         </CardContent>
                         <CardFooter className="flex justify-center p-4">
-                            {purchased ? (
+                            {purchased ? ( // if value of 'purchased' is true, render first content, otherwise, render second content
                                 <Button 
                                     onClick={handleContinueCourse} 
                                     className="w-full"
                                 >
-                                    Continue Course {/* button to continue course if purchased */}
+                                    Continue Course
                                 </Button>
                             ) : (
-                                <BuyCourseButton courseId={courseId} /> // button to buy course if not purchased
+                                <BuyCourseButton courseId={courseId} />
                             )}
                         </CardFooter>
                     </Card>
@@ -112,4 +107,4 @@ const CourseDetail = () => { // define a function CourseDetail to render course 
     );
 };
 
-export default CourseDetail; // export CourseDetail component for use in other parts of the app
+export default CourseDetail;
