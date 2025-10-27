@@ -1,44 +1,41 @@
-import React, { useEffect } from "react"; // import React library and useEffect hook to create functional component and handle side effects
-import { Button } from "./ui/button"; // import Button component from ui directory for rendering the purchase button
+import React, { useEffect } from "react"; // import 'useEffect' hook to implement side effects
+import { Button } from "./ui/button"; // import Button component from shadCN UI library
 import { useCreateCheckoutSessionMutation } from "@/features/api/purchaseApi"; // import RTK Query mutation hook to handle creating checkout session via API
-import { Loader2 } from "lucide-react"; // import Loader2 icon for loading animation during purchase process
-import { toast } from "sonner"; // import toast notification library to display success or error messages
+import { Loader2 } from "lucide-react"; // import 'Loader2' icon from react-lucide library
+import { toast } from "sonner"; // import 'toast' component from sonner library for toast messages
 
-const BuyCourseButton = ({ courseId }) => { // define a function component BuyCourseButton with courseId prop to identify which course to purchase
-    const [ // destructure array returned by RTK Query hook
-        createCheckoutSession, // function to trigger checkout session creation API call
-        { data, isLoading, isSuccess, isError, error } // object containing response data and status flags from mutation
-    ] = useCreateCheckoutSessionMutation(); // call custom mutation hook to manage API state for creating Stripe checkout session
+const BuyCourseButton = ({ courseId }) => { // define a functional component named 'BuyCourseButton' that takes 'courseId' as props
+    const [ createCheckoutSession, { data, isLoading, isSuccess, isError, error } ] = useCreateCheckoutSessionMutation(); // extract the following things from 'useCreateCheckoutSessionMutation' hook
 
-    const purchaseCourseHandler = async () => { // define a function to handle purchase button click
-        await createCheckoutSession(courseId); // call createCheckoutSession function with courseId argument to initiate checkout API request
+    const purchaseCourseHandler = async () => { // create an async function naemd 'purchaseCourseHandler'
+        await createCheckoutSession(courseId); // call 'createCheckoutSession' function with 'courseId' as argument
     };
 
-    useEffect(() => { // use useEffect hook to handle side effects when API response changes
-        if (isSuccess) { // check if API request was successful
-            if (data?.url) window.location.href = data.url; // if response contains a valid checkout URL, redirect user to Stripe checkout page
-            else toast.error("Invalid response from server."); // if URL missing, show error toast
+    useEffect(() => { // use 'useEffect' hook to create a side effect
+        if (isSuccess) { // if 'isSuccess' is true
+            if (data?.url) window.location.href = data.url; // if 'url' property of 'data' object has non-null value, redirect user to URL that is value of 'url' property
+            else toast.error("Invalid response from server."); // if URL missing, show error toast message
         }
 
-        if (isError) toast.error(error?.data?.message || "Failed to create checkout session"); // if API request fails, show error toast with message from server or fallback text
+        if (isError) toast.error(error?.data?.message || "Failed to create checkout session"); // if 'isError' is true, show a toast message that is in 'message' property of 'data' object of 'error' object, or a backup message if even that doesn't exist
     }, [data, isSuccess, isError, error]); // dependency array to re-run effect when any of these variables change
 
-    return ( // render JSX for the button
+    return (
         <Button
-            disabled={isLoading} // disable button while API request is in progress
-            onClick={purchaseCourseHandler} // set click handler to start purchase process
+            disabled={isLoading} // this button is disabled ie unclickable when value of 'isLoading' is true
+            onClick={purchaseCourseHandler} // call 'purchaseCourseHandler' function when this button is cliked
             className="w-full"
         >
-            {isLoading ? ( // conditional rendering to show loading spinner while waiting for API response
+            {isLoading ? ( // if 'isLoading' is true, then render loader with message 'Please Wait', otherwise render text 'Purchase Course', any one of it renders inside button
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
                     Please wait
                 </>
             ) : (
-                "Purchase Course" // show button text when not loading
+                "Purchase Course"
             )}
         </Button>
     );
 };
 
-export default BuyCourseButton; // export component to use it in other parts of the application
+export default BuyCourseButton;

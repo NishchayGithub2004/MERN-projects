@@ -6,9 +6,9 @@ import useGetAllPost from '@/hooks/useGetAllPost' // import custom hook to fetch
 import useGetSuggestedUsers from '@/hooks/useGetSuggestedUsers' // import custom hook to fetch suggested users for sidebar
 
 const Home = () => { // define a functional component Home to render the main layout of the app
-    useGetAllPost() // call custom hook to fetch all posts when Home component renders, no arguments needed
+    useGetAllPost() // call custom hook to fetch all posts when Home component renders
     
-    useGetSuggestedUsers() // call custom hook to fetch suggested users when Home component renders, no arguments needed
+    useGetSuggestedUsers() // call custom hook to fetch suggested users when Home component renders
     
     return (
         <div className='flex'> 

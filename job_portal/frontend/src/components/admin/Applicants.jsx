@@ -12,9 +12,7 @@ const Applicants = () => { // define a function component Applicants to display 
 
     const dispatch = useDispatch(); // call useDispatch to get dispatch function for sending Redux actions
 
-    const { applicants } = useSelector( // destructure 'applicants' from Redux store using useSelector hook
-        store => store.application // access 'application' slice from Redux store to retrieve applicants data
-    );
+    const { applicants } = useSelector(store => store.application); // access 'application' slice from Redux store to retrieve 'applicants'
 
     useEffect(() => { // define side effect to fetch all applicants when the component first mounts
         const fetchAllApplicants = async () => { // define an asynchronous function to make API call for fetching applicants
@@ -41,8 +39,8 @@ const Applicants = () => { // define a function component Applicants to display 
         <div>
             <Navbar />
             <div className='max-w-7xl mx-auto'>
-                <h1 className='font-bold text-xl my-5'>Applicants {applicants?.applications?.length}</h1> 
-                <ApplicantsTable /> 
+                <h1 className='font-bold text-xl my-5'>Applicants {applicants?.applications?.length}</h1> {/* access 'length' property of 'applications' property of 'applicants' object to show number of applicants for a job */}
+                <ApplicantsTable />
             </div>
         </div>
     )

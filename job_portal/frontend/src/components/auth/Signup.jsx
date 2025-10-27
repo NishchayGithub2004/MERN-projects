@@ -84,7 +84,7 @@ const Signup = () => { // define a function component Signup to render user regi
         }
     }, []) // run effect only once on mount since dependency array is empty
 
-    return ( // return JSX layout for signup page UI
+    return (
         <div>
             <Navbar />
             <div className='flex items-center justify-center max-w-7xl mx-auto'>
@@ -100,7 +100,7 @@ const Signup = () => { // define a function component Signup to render user regi
                             value={input.fullname}
                             name="fullname"
                             onChange={changeEventHandler} // attach changeEventHandler to update fullname in state
-                            placeholder="patel"
+                            placeholder="Enter your name"
                         />
                     </div>
                     <div className='my-2'>
@@ -110,7 +110,7 @@ const Signup = () => { // define a function component Signup to render user regi
                             value={input.email}
                             name="email"
                             onChange={changeEventHandler} // attach changeEventHandler to update email in state
-                            placeholder="patel@gmail.com"
+                            placeholder="Enter your email"
                         />
                     </div>
                     <div className='my-2'>
@@ -120,7 +120,7 @@ const Signup = () => { // define a function component Signup to render user regi
                             value={input.phoneNumber}
                             name="phoneNumber"
                             onChange={changeEventHandler} // attach changeEventHandler to update phone number in state
-                            placeholder="8080808080"
+                            placeholder="Enter your contact number"
                         />
                     </div>
                     <div className='my-2'>
@@ -130,7 +130,7 @@ const Signup = () => { // define a function component Signup to render user regi
                             value={input.password}
                             name="password"
                             onChange={changeEventHandler} // attach changeEventHandler to update password in state
-                            placeholder="patel@gmail.com"
+                            placeholder="Enter your password"
                         />
                     </div>
                     <div className='flex items-center justify-between'>

@@ -10,16 +10,12 @@ import axios from 'axios'; // import axios to make HTTP requests
 const shortlistingStatus = ["Accepted", "Rejected"]; // define an array containing possible applicant shortlisting statuses
 
 const ApplicantsTable = () => { // define a function component ApplicantsTable to display and manage applicant data
-    const { applicants } = useSelector( // destructure 'applicants' from Redux store using useSelector hook
-        store => store.application // access 'application' slice from Redux store that contains applicants list
-    );
+    const { applicants } = useSelector(store => store.application); // access 'application' slice from Redux store to access 'applicants' list
 
     const statusHandler = async ( // define an asynchronous function to handle updating applicant status
         status, // argument 'status' holds the selected status value (Accepted or Rejected)
         id // argument 'id' holds the unique identifier of the applicant record
     ) => {
-        console.log('called'); // log message for debugging whenever function executes
-        
         try {
             axios.defaults.withCredentials = true; // enable axios to send cookies for authentication in requests
             
