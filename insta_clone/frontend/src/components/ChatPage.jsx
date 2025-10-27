@@ -16,7 +16,7 @@ const ChatPage = () => { // define a function component ChatPage to render chat 
         store => store.auth // access the auth slice of the Redux store
     )
 
-    const users = Array.isArray(suggestedUsers) ? suggestedUsers : [];
+    const users = Array.isArray(suggestedUsers) ? suggestedUsers : []; // if 'suggestedUsers' is an array, then allot it to 'users', otherwise, leave the array empty
 
     const { onlineUsers, messages } = useSelector( // destructure onlineUsers and messages from Redux chat state
         store => store.chat // access the chat slice of the Redux store
