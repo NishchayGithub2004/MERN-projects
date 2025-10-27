@@ -5,13 +5,9 @@ import { useDispatch, useSelector } from "react-redux"; // import useDispatch an
 const useGetRTM = () => { // define a custom hook useGetRTM to handle real-time message updates using socket.io
     const dispatch = useDispatch(); // initialize dispatch function to dispatch Redux actions
 
-    const { socket } = useSelector( // use useSelector to access the socket instance from Redux state
-        store => store.socketio // access socket from the socketio slice in the Redux store
-    );
+    const { socket } = useSelector(store => store.socketio); // using 'useSelector' hook, access 'socket' from 'socketio' store
 
-    const { messages } = useSelector( // use useSelector to access the messages array from Redux state
-        store => store.chat // access messages from the chat slice in the Redux store
-    );
+    const { messages } = useSelector(store => store.chat); // using 'useSelector' hook, access 'messages' from 'chat' store
 
     useEffect(() => { // use useEffect hook to set up and clean up socket event listeners when dependencies change
         socket?.on( // call the on method of the socket object to listen for a specific event
