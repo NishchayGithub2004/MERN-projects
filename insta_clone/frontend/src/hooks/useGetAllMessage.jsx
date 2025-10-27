@@ -6,9 +6,7 @@ import { useDispatch, useSelector } from "react-redux"; // import useDispatch an
 const useGetAllMessage = () => { // define a custom hook useGetAllMessage to fetch all chat messages for the selected user
     const dispatch = useDispatch(); // initialize dispatch function to dispatch Redux actions
 
-    const { selectedUser } = useSelector( // use useSelector to access a specific part of the Redux state
-        store => store.auth // retrieve the selectedUser value from the auth slice in the Redux store
-    );
+    const { selectedUser } = useSelector(store => store.auth); // using 'useSelector' hook, access 'selectedUser' from 'auth' store
 
     useEffect(() => { // use useEffect hook to run the message fetching logic when selectedUser changes
         const fetchAllMessage = async () => { // define an asynchronous function fetchAllMessage to fetch all chat messages from the server
