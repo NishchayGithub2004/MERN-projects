@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children }) => { // define a functional component name
 
     return ( // return child components wrapped inside fragment if authorization conditions are met
         <>
-            {children} // render child components passed to ProtectedRoute when user passes authentication check
+            {children} {/* render child components passed to ProtectedRoute when user passes authentication check */}
         </>
     )
 }
