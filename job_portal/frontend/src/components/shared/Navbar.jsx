@@ -67,18 +67,18 @@ const Navbar = () => { // define functional component 'Navbar' to render the mai
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Avatar className="cursor-pointer">
-                                        <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" /> // dynamically render user profile photo if available
+                                        <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" /> {/* dynamically render user profile photo if available */}
                                     </Avatar>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-80">
                                     <div>
                                         <div className='flex gap-2 space-y-2'>
                                             <Avatar className="cursor-pointer">
-                                                <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" /> // show same profile image inside popover for identity consistency
+                                                <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" /> {/* show same profile image inside popover for identity consistency */}
                                             </Avatar>
                                             <div>
-                                                <h4 className='font-medium'>{user?.fullname}</h4> // display user's full name fetched from state
-                                                <p className='text-sm text-muted-foreground'>{user?.profile?.bio}</p> // display user's short bio for context
+                                                <h4 className='font-medium'>{user?.fullname}</h4> {/* display user's full name fetched from state */}
+                                                <p className='text-sm text-muted-foreground'>{user?.profile?.bio}</p> {/* display user's short bio for context */}
                                             </div>
                                         </div>
                                         <div className='flex flex-col my-2 text-gray-600'>
@@ -86,13 +86,13 @@ const Navbar = () => { // define functional component 'Navbar' to render the mai
                                                 user && user.role === 'student' && ( // conditionally render profile link for student users
                                                     <div className='flex w-fit items-center gap-2 cursor-pointer'>
                                                         <User2 /> // display user icon to represent profile
-                                                        <Button variant="link"> <Link to="/profile">View Profile</Link></Button> // link button to open user's profile page
+                                                        <Button variant="link"> <Link to="/profile">View Profile</Link></Button> {/* link button to open user's profile page */}
                                                     </div>
                                                 )
                                             }
                                             <div className='flex w-fit items-center gap-2 cursor-pointer'>
-                                                <LogOut /> // display logout icon beside button for better visual cue
-                                                <Button 
+                                                <LogOut /> {/* display logout icon beside button for better visual cue */}
+                                                <Button
                                                     onClick={logoutHandler} // attach logoutHandler to perform logout on click
                                                     variant="link"
                                                 >
