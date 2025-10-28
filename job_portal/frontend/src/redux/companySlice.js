@@ -1,28 +1,24 @@
-import { createSlice } from "@reduxjs/toolkit"; // import the createSlice function from Redux Toolkit to create a slice that combines reducers, actions, and state for a specific feature
+import { createSlice } from "@reduxjs/toolkit"; // import createSlice from redux toolkit to easily define a redux slice that manages company-related state and actions
 
-const companySlice = createSlice({ // define a constant named companySlice by calling createSlice to create a Redux slice for company-related data
-    name: "company", // specify the name of the slice as 'company' to label this section of the Redux state tree
-
-    initialState: { // define the initial state object for the company slice
-        singleCompany: null, // initialize singleCompany as null to represent that no individual company data is loaded initially
-        companies: [], // initialize companies as an empty array to store a list of companies when data is fetched
-        searchCompanyByText: "", // initialize searchCompanyByText as an empty string to hold user-entered search text for filtering companies
+const companySlice = createSlice({ // create a redux slice named companySlice to handle logic and data flow related to companies
+    name: "company", // set the name of this slice as 'company' to represent the company section in the redux store
+    initialState: { // define the default structure and initial values for the company state
+        singleCompany: null, // initialize singleCompany as null to indicate that no specific company details are currently loaded
+        companies: [], // initialize companies as an empty array to store multiple company records once fetched
+        searchCompanyByText: "", // initialize searchCompanyByText as an empty string to hold the user's search query for filtering companies
     },
-
-    reducers: { // define reducer functions that describe how the state changes based on specific actions
-        setSingleCompany: (state, action) => { // define a reducer function setSingleCompany with arguments state (current company state) and action (object containing payload data)
-            state.singleCompany = action.payload; // update singleCompany with the value provided in action.payload to store details of a single company
+    reducers: { // declare reducer functions that specify how the company state should update in response to dispatched actions
+        setSingleCompany: (state, action) => { // define reducer setSingleCompany which assigns company details from the action payload to the state
+            state.singleCompany = action.payload; // update singleCompany with action.payload to save the currently selected company's data
         },
-
-        setCompanies: (state, action) => { // define a reducer function setCompanies with arguments state (current company state) and action (object containing payload data)
-            state.companies = action.payload; // update companies with the array provided in action.payload to store a list of companies
+        setCompanies: (state, action) => { // define reducer setCompanies which replaces the companies array with new data from the action payload
+            state.companies = action.payload; // update companies with action.payload to store the fetched list of companies
         },
-
-        setSearchCompanyByText: (state, action) => { // define a reducer function setSearchCompanyByText with arguments state (current company state) and action (object containing payload data)
-            state.searchCompanyByText = action.payload; // update searchCompanyByText with the value provided in action.payload to store the current search input for filtering companies
+        setSearchCompanyByText: (state, action) => { // define reducer setSearchCompanyByText which updates the search text in state using action payload
+            state.searchCompanyByText = action.payload; // assign action.payload to searchCompanyByText to track user input for company search filtering
         }
     }
 });
 
-export const { setSingleCompany, setCompanies, setSearchCompanyByText } = companySlice.actions; // export the automatically generated action creators setSingleCompany, setCompanies, and setSearchCompanyByText for dispatching actions
-export default companySlice.reducer; // export the reducer function of companySlice as the default export to integrate into the Redux store
+export const { setSingleCompany, setCompanies, setSearchCompanyByText } = companySlice.actions; // extract and export setSingleCompany, setCompanies, and setSearchCompanyByText action creators for dispatching updates to the redux store
+export default companySlice.reducer; // export reducer function as default to integrate companySlice into the redux store configuration
