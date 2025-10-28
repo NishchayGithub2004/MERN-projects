@@ -164,7 +164,7 @@ const Signup = () => { // define functional component 'Signup' to render signup 
                         ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> // show loading spinner while submitting
                         : <Button type="submit" className="w-full my-4">Signup</Button> // show signup button when not loading
                     }
-                    <span className='text-sm'>Already have an account? <Link to="/login" className='text-blue-600'>Login</Link></span> // show link to login page for existing users
+                    <span className='text-sm'>Already have an account? <Link to="/login" className='text-blue-600'>Login</Link></span> {/* show link to login page for existing users */}
                 </form>
             </div>
         </div>
