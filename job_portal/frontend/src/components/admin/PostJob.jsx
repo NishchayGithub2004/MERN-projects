@@ -1,69 +1,67 @@
-import React, { useState } from 'react' // import React and useState hook for managing component state
-import Navbar from '../shared/Navbar' // import Navbar component for consistent page header
-import { Label } from '../ui/label' // import Label component for input labeling
-import { Input } from '../ui/input' // import Input component for user input fields
-import { Button } from '../ui/button' // import Button component for actions
+import React, { useState } from 'react' // import React to define component and useState hook to manage local state
+import Navbar from '../shared/Navbar' // import Navbar component for consistent top navigation
+import { Label } from '../ui/label' // import Label component to describe input fields
+import { Input } from '../ui/input' // import Input component to capture user text or number inputs
+import { Button } from '../ui/button' // import Button component for clickable UI actions
 import { useSelector } from 'react-redux' // import useSelector hook to access Redux store data
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../ui/select' // import Select components for dropdown functionality
-import axios from 'axios' // import axios for API requests
-import { JOB_API_END_POINT } from '@/utils/constant' // import constant containing job API endpoint
-import { toast } from 'sonner' // import toast notification library
-import { useNavigate } from 'react-router-dom' // import hook for programmatic navigation
-import { Loader2 } from 'lucide-react' // import Loader2 icon for loading spinner
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../ui/select' // import dropdown components for company selection
+import axios from 'axios' // import axios library to perform HTTP requests
+import { JOB_API_END_POINT } from '@/utils/constant' // import predefined API endpoint constant for job operations
+import { toast } from 'sonner' // import toast function to show feedback notifications
+import { useNavigate } from 'react-router-dom' // import hook to programmatically navigate between routes
+import { Loader2 } from 'lucide-react' // import loader icon to visually indicate loading process
 
-const companyArray = []; // define an empty array variable (not used here but declared globally)
+const PostJob = () => { // define a functional component named PostJob to handle job posting functionality
+    const [input, setInput] = useState({ // define state to hold all form input values for job posting
+        title: "", // store title of the job
+        description: "", // store job description entered by user
+        requirements: "", // store job requirements input by user
+        salary: "", // store salary amount offered for job
+        location: "", // store job location input
+        jobType: "", // store job type value like full-time or part-time
+        experience: "", // store experience level required for job
+        position: 0, // store number of available job positions
+        companyId: "" // store ID of selected company from dropdown
+    })
 
-const PostJob = () => { // define a functional component for posting a new job
-    const [input, setInput] = useState({ // define state to manage all job form input values
-        title: "", // store job title
-        description: "", // store job description
-        requirements: "", // store job requirements
-        salary: "", // store offered salary
-        location: "", // store job location
-        jobType: "", // store job type (e.g., full-time, part-time)
-        experience: "", // store required experience level
-        position: 0, // store number of positions available
-        companyId: "" // store selected company ID
-    });
+    const [loading, setLoading] = useState(false) // define loading state to control submission spinner visibility
 
-    const [loading, setLoading] = useState(false); // define state to track loading state during API call
+    const navigate = useNavigate() // get navigation function to redirect after successful submission
 
-    const navigate = useNavigate(); // call useNavigate to redirect user after job creation
+    const { companies } = useSelector(store => store.company) // extract companies list from Redux store for dropdown rendering
 
-    const { companies } = useSelector(store => store.company); // extract companies array from Redux store
+    const changeEventHandler = (e) => { // define handler to update text input state values dynamically
+        setInput({ ...input, [e.target.name]: e.target.value }) // update respective field in input state using computed key name
+    }
 
-    const changeEventHandler = (e) => { // define function to handle input field changes
-        setInput({ ...input, [e.target.name]: e.target.value }); // dynamically update the changed field in input state using computed property
-    };
+    const selectChangeHandler = (value) => { // define handler to manage dropdown company selection
+        const selectedCompany = companies.find((company) => company.name.toLowerCase() === value) // find matching company object using lowercase name comparison
+        setInput({ ...input, companyId: selectedCompany._id }) // update input state with selected company’s unique id
+    }
 
-    const selectChangeHandler = (value) => { // define function to handle dropdown company selection
-        const selectedCompany = companies.find((company) => company.name.toLowerCase() === value); // find the selected company by comparing lowercase names
-        setInput({ ...input, companyId: selectedCompany._id }); // update companyId in state with selected company’s ID
-    };
-
-    const submitHandler = async (e) => { // define asynchronous function to handle job form submission
-        e.preventDefault(); // prevent page reload after form submission
+    const submitHandler = async (e) => { // define async handler to manage job form submission logic
+        e.preventDefault() // prevent page reload caused by default form behavior
 
         try {
-            setLoading(true); // set loading state to true during API call
+            setLoading(true) // activate loading state before making API call
 
-            const res = await axios.post( // send POST request to job API endpoint to create a new job
-                `${JOB_API_END_POINT}/post`, // use endpoint constant for cleaner code
-                input, // send all input field values as JSON payload
+            const res = await axios.post( // send POST request to backend server to create new job entry
+                `${JOB_API_END_POINT}/post`, // use job endpoint constant for clean and consistent URL
+                input, // send input state as JSON body to server
                 {
-                    headers: { 'Content-Type': 'application/json' }, // set request header to JSON
-                    withCredentials: true // include cookies for authentication
+                    headers: { 'Content-Type': 'application/json' }, // set content type header for JSON payload
+                    withCredentials: true // include cookies for authentication with server
                 }
-            );
+            )
 
-            if (res.data.success) { // check if the response indicates success
-                toast.success(res.data.message); // show success message to user
-                navigate("/admin/jobs"); // redirect to admin jobs page after success
+            if (res.data.success) { // check API response for successful job creation
+                toast.success(res.data.message) // display success message via toast notification
+                navigate("/admin/jobs") // redirect user to admin job listing page after success
             }
         } catch (error) {
-            toast.error(error.response.data.message); // display error message from server response
+            toast.error(error.response.data.message) // show backend error message if request fails
         } finally {
-            setLoading(false); // set loading state to false after API call completes
+            setLoading(false) // deactivate loading state once API call finishes
         }
     }
 
@@ -82,7 +80,7 @@ const PostJob = () => { // define a functional component for posting a new job
                                 type="text"
                                 name="title"
                                 value={input.title}
-                                onChange={changeEventHandler} // call changeEventHandler to update title
+                                onChange={changeEventHandler} // call changeEventHandler to update job title in state
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
@@ -92,7 +90,7 @@ const PostJob = () => { // define a functional component for posting a new job
                                 type="text"
                                 name="description"
                                 value={input.description}
-                                onChange={changeEventHandler} // call changeEventHandler to update description
+                                onChange={changeEventHandler} // call changeEventHandler to update description in state
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
@@ -102,7 +100,7 @@ const PostJob = () => { // define a functional component for posting a new job
                                 type="text"
                                 name="requirements"
                                 value={input.requirements}
-                                onChange={changeEventHandler} // call changeEventHandler to update requirements
+                                onChange={changeEventHandler} // call changeEventHandler to update requirements field
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
@@ -112,7 +110,7 @@ const PostJob = () => { // define a functional component for posting a new job
                                 type="text"
                                 name="salary"
                                 value={input.salary}
-                                onChange={changeEventHandler} // call changeEventHandler to update salary
+                                onChange={changeEventHandler} // call changeEventHandler to update salary field
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
@@ -122,7 +120,7 @@ const PostJob = () => { // define a functional component for posting a new job
                                 type="text"
                                 name="location"
                                 value={input.location}
-                                onChange={changeEventHandler} // call changeEventHandler to update location
+                                onChange={changeEventHandler} // call changeEventHandler to update location field
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
@@ -132,7 +130,7 @@ const PostJob = () => { // define a functional component for posting a new job
                                 type="text"
                                 name="jobType"
                                 value={input.jobType}
-                                onChange={changeEventHandler} // call changeEventHandler to update jobType
+                                onChange={changeEventHandler} // call changeEventHandler to update jobType field
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
@@ -142,32 +140,32 @@ const PostJob = () => { // define a functional component for posting a new job
                                 type="text"
                                 name="experience"
                                 value={input.experience}
-                                onChange={changeEventHandler} // call changeEventHandler to update experience
+                                onChange={changeEventHandler} // call changeEventHandler to update experience field
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
                         <div>
-                            <Label>No of Postion</Label>
+                            <Label>No of Position</Label>
                             <Input
                                 type="number"
                                 name="position"
                                 value={input.position}
-                                onChange={changeEventHandler} // call changeEventHandler to update number of positions
+                                onChange={changeEventHandler} // call changeEventHandler to update number of positions field
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
                         {
-                            companies.length > 0 && ( // render company select dropdown only if companies exist
-                                <Select onValueChange={selectChangeHandler}> {/* call selectChangeHandler when option changes */}
+                            companies.length > 0 && ( // conditionally render dropdown only when companies array is not empty
+                                <Select onValueChange={selectChangeHandler}> {/* trigger selectChangeHandler when user selects company */}
                                     <SelectTrigger className="w-[180px]">
                                         <SelectValue placeholder="Select a Company" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
                                             {
-                                                companies.map((company) => { // iterate through all companies to create options
+                                                companies.map((company) => { // iterate through companies array to display each company name
                                                     return (
-                                                        <SelectItem value={company?.name?.toLowerCase()}>{company.name}</SelectItem>
+                                                        <SelectItem value={company?.name?.toLowerCase()}>{company.name}</SelectItem> // render company option with lowercase value for matching
                                                     )
                                                 })
                                             }
@@ -179,11 +177,11 @@ const PostJob = () => { // define a functional component for posting a new job
                     </div>
                     {
                         loading 
-                        ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> 
-                        : <Button type="submit" className="w-full my-4">Post New Job</Button> // handle button state dynamically
+                        ? <Button className="w-full my-4"><Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait</Button> 
+                        : <Button type="submit" className="w-full my-4">Post New Job</Button> // submit form to create new job when not loading
                     }
                     {
-                        companies.length === 0 && <p className='text-xs text-red-600 font-bold text-center my-3'>*Please register a company first, before posting a jobs</p> // show warning if no companies exist
+                        companies.length === 0 && <p className='text-xs text-red-600 font-bold text-center my-3'>*Please register a company first, before posting a jobs</p> // show warning if no companies are available
                     }
                 </form>
             </div>
@@ -191,4 +189,4 @@ const PostJob = () => { // define a functional component for posting a new job
     )
 }
 
-export default PostJob
+export default PostJob // export PostJob component as default for routing or import in other modules
