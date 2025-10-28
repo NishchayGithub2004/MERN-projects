@@ -1,50 +1,50 @@
-import React, { useEffect, useState } from 'react' // import React and hooks useEffect for side-effects and useState for local state
-import Navbar from './shared/Navbar' // import Navbar component for top navigation
-import FilterCard from './FilterCard' // import FilterCard component for filtering jobs
-import Job from './Job'; // import Job component to render individual job
-import { useSelector } from 'react-redux'; // import useSelector hook to access Redux store state
-import { motion } from 'framer-motion'; // import motion for animation effects
+import React, { useEffect, useState } from 'react' // import React library and hooks useEffect for side effects, useState for managing local component state
+import Navbar from './shared/Navbar' // import Navbar component to render top navigation bar
+import FilterCard from './FilterCard' // import FilterCard component to allow filtering of job listings
+import Job from './Job' // import Job component to display individual job details
+import { useSelector } from 'react-redux' // import useSelector hook to access state data from Redux store
+import { motion } from 'framer-motion' // import motion component from framer-motion for animation effects
 
-const Jobs = () => { // define a function component Jobs to display job list with filters
-    const { allJobs, searchedQuery } = useSelector(store => store.job); // select allJobs array and searchedQuery from Redux store
+const Jobs = () => { // define a functional component named 'Jobs' to display job listings with filtering functionality
+    const { allJobs, searchedQuery } = useSelector(store => store.job) // extract allJobs array and searchedQuery string from Redux job slice
+    
+    const [filterJobs, setFilterJobs] = useState(allJobs) // initialize state variable filterJobs with allJobs to hold filtered job results
 
-    const [filterJobs, setFilterJobs] = useState(allJobs); // initialize local state filterJobs with allJobs; setFilterJobs updates filtered jobs
-
-    useEffect(() => { // define effect to filter jobs whenever allJobs or searchedQuery changes
-        if (searchedQuery) { // check if a search query exists
-            const filteredJobs = allJobs.filter((job) => { // filter allJobs based on search query
-                return job.title.toLowerCase().includes(searchedQuery.toLowerCase()) || // include jobs where title matches query
-                    job.description.toLowerCase().includes(searchedQuery.toLowerCase()) || // include jobs where description matches query
-                    job.location.toLowerCase().includes(searchedQuery.toLowerCase()) // include jobs where location matches query
-            })
-
-            setFilterJobs(filteredJobs) // update filterJobs state with filtered results
+    useEffect(() => { // run side effect when allJobs or searchedQuery changes
+        if (searchedQuery) { // check if user has entered a search query
+            const filteredJobs = allJobs.filter((job) => ( // create new array by filtering allJobs that match the search query
+                job.title.toLowerCase().includes(searchedQuery.toLowerCase()) || // include job if title contains searched query
+                job.description.toLowerCase().includes(searchedQuery.toLowerCase()) || // include job if description contains searched query
+                job.location.toLowerCase().includes(searchedQuery.toLowerCase()) // include job if location contains searched query
+            ))
+            setFilterJobs(filteredJobs) // update filterJobs state with the filtered job list
         } else {
-            setFilterJobs(allJobs) // if no search query, reset filterJobs to allJobs
+            setFilterJobs(allJobs) // reset filterJobs to allJobs when no search query is active
         }
-    }, [allJobs, searchedQuery]); // run effect when allJobs array or searchedQuery string changes
+    }, [allJobs, searchedQuery]) // dependencies ensure filtering happens whenever job data or query changes
 
     return (
         <div>
-            <Navbar />
+            <Navbar /> 
             <div className='max-w-7xl mx-auto mt-5'>
                 <div className='flex gap-5'>
                     <div className='w-20%'>
-                        <FilterCard />
+                        <FilterCard /> 
                     </div>
                     {
-                        filterJobs.length <= 0 ? <span>Job not found</span> : ( // conditionally show message if no jobs match filter
+                        filterJobs.length <= 0 ? <span>Job not found</span> : ( // show 'Job not found' if no jobs match the filter
                             <div className='flex-1 h-[88vh] overflow-y-auto pb-5'>
                                 <div className='grid grid-cols-3 gap-4'>
                                     {
-                                        filterJobs.map((job) => ( // map over filtered jobs to render Job components
+                                        filterJobs.map((job) => ( // iterate through filtered job list and render each Job component
                                             <motion.div
-                                                initial={{ opacity: 0, x: 100 }} // set initial animation state for motion
-                                                animate={{ opacity: 1, x: 0 }} // set animate state for motion
-                                                exit={{ opacity: 0, x: -100 }} // set exit animation state for motion
-                                                transition={{ duration: 0.3 }} // set transition duration for animation
-                                                key={job?._id}> {/* set key to job ID for React list rendering */}
-                                                <Job job={job} /> {/* render Job component passing job object as prop */}
+                                                initial={{ opacity: 0, x: 100 }} // start animation with hidden position shifted right
+                                                animate={{ opacity: 1, x: 0 }} // animate into visible position
+                                                exit={{ opacity: 0, x: -100 }} // define exit animation moving left
+                                                transition={{ duration: 0.3 }} // define animation duration as 0.3 seconds
+                                                key={job?._id} // assign unique key using job ID for React list rendering optimization
+                                            >
+                                                <Job job={job} /> {/* render Job component passing job object as prop to display job details */}
                                             </motion.div>
                                         ))
                                     }
@@ -58,4 +58,4 @@ const Jobs = () => { // define a function component Jobs to display job list wit
     )
 }
 
-export default Jobs
+export default Jobs // export Jobs component for routing and usage across the application
