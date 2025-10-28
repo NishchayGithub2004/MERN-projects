@@ -1,40 +1,37 @@
-import React from 'react' // import React to define the functional component
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '../ui/table' // import table UI components for displaying applicant data
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'; // import popover components for dropdown menu functionality
-import { MoreHorizontal } from 'lucide-react'; // import horizontal menu icon for the popover trigger
-import { useSelector } from 'react-redux'; // import useSelector hook to access Redux store data
-import { toast } from 'sonner'; // import toast library to show success or error notifications
-import { APPLICATION_API_END_POINT } from '@/utils/constant'; // import constant containing API endpoint for application operations
-import axios from 'axios'; // import axios to make HTTP requests
+import React from 'react' // import react library to create components
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '../ui/table' // import table ui components to display applicant data in a structured format
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover' // import popover ui components to show dropdown menu for actions
+import { MoreHorizontal } from 'lucide-react' // import horizontal menu icon used as popover trigger
+import { useSelector } from 'react-redux' // import useSelector hook to access state data from redux store
+import { toast } from 'sonner' // import toast library to display success or error notifications
+import { APPLICATION_API_END_POINT } from '@/utils/constant' // import constant that defines base api endpoint for application operations
+import axios from 'axios' // import axios library to send http requests to backend
 
-const shortlistingStatus = ["Accepted", "Rejected"]; // define an array containing possible applicant shortlisting statuses
+const shortlistingStatus = ["Accepted", "Rejected"] // define array of possible applicant statuses used for shortlisting decisions
 
-const ApplicantsTable = () => { // define a function component ApplicantsTable to display and manage applicant data
-    const { applicants } = useSelector(store => store.application); // access 'application' slice from Redux store to access 'applicants' list
+const ApplicantsTable = () => { // define functional component 'ApplicantsTable' to display and manage applicant records
+    const { applicants } = useSelector(store => store.application) // extract 'applicants' object from 'application' slice in redux store to access all applicant data
 
-    const statusHandler = async ( // define an asynchronous function to handle updating applicant status
-        status, // argument 'status' holds the selected status value (Accepted or Rejected)
-        id // argument 'id' holds the unique identifier of the applicant record
+    const statusHandler = async ( // define asynchronous function to handle applicant status updates
+        status, // parameter 'status' represents selected status value such as 'Accepted' or 'Rejected'
+        id // parameter 'id' represents unique applicant identifier
     ) => {
         try {
-            axios.defaults.withCredentials = true; // enable axios to send cookies for authentication in requests
-            
-            const res = await axios.post( // make POST request to backend to update applicant status
-                `${APPLICATION_API_END_POINT}/status/${id}/update`, // construct API URL dynamically using applicant ID
-                { status } // send an object containing the updated status value as request body
-            );
-            
-            console.log(res); // log full response for debugging
-            
-            if (res.data.success) { // check if the response indicates success
-                toast.success(res.data.message); // show success toast notification with server-provided message
+            axios.defaults.withCredentials = true // enable axios to send cookies with requests for authentication
+            const res = await axios.post( // send post request to backend api to update applicant status
+                `${APPLICATION_API_END_POINT}/status/${id}/update`, // construct api endpoint dynamically using applicant id
+                { status } // include updated status value in request body to inform server of status change
+            ) 
+            console.log(res) // log response object for debugging purposes
+            if (res.data.success) { // check if server response indicates successful status update
+                toast.success(res.data.message) // display success toast with message returned from server
             }
-        } catch (error) { // catch any errors thrown during the request
-            toast.error(error.response.data.message); // display error message from server in toast notification
+        } catch (error) { // handle any exceptions thrown during api call
+            toast.error(error.response.data.message) // show error toast with message received from backend
         }
     }
 
-    return (
+    return ( // return jsx to render table of applicants with action controls
         <div>
             <Table>
                 <TableCaption>A list of your recent applied user</TableCaption>
@@ -50,14 +47,14 @@ const ApplicantsTable = () => { // define a function component ApplicantsTable t
                 </TableHeader>
                 <TableBody>
                     {
-                        applicants && applicants?.applications?.map((item) => ( // iterate over all applicant records to render rows dynamically
-                            <tr key={item._id}>
+                        applicants && applicants?.applications?.map((item) => ( // iterate through each applicant in 'applications' array to render table rows
+                            <tr key={item._id}> 
                                 <TableCell>{item?.applicant?.fullname}</TableCell>
                                 <TableCell>{item?.applicant?.email}</TableCell>
                                 <TableCell>{item?.applicant?.phoneNumber}</TableCell>
                                 <TableCell>
                                     {
-                                        item.applicant?.profile?.resume // check if resume file exists for applicant
+                                        item.applicant?.profile?.resume // check if resume file exists in applicant's profile
                                             ? <a 
                                                 className="text-blue-600 cursor-pointer" 
                                                 href={item?.applicant?.profile?.resume} 
@@ -65,8 +62,8 @@ const ApplicantsTable = () => { // define a function component ApplicantsTable t
                                                 rel="noopener noreferrer"
                                               >
                                                 {item?.applicant?.profile?.resumeOriginalName}
-                                              </a> // render clickable link if resume exists
-                                            : <span>NA</span> // render "NA" if resume not available
+                                              </a> // render clickable link to resume file when available
+                                            : <span>NA</span> // display 'NA' when resume not found
                                     }
                                 </TableCell>
                                 <TableCell>{item?.applicant.createdAt.split("T")[0]}</TableCell> 
@@ -77,10 +74,10 @@ const ApplicantsTable = () => { // define a function component ApplicantsTable t
                                         </PopoverTrigger>
                                         <PopoverContent className="w-32">
                                             {
-                                                shortlistingStatus.map((status, index) => { // map through shortlisting statuses (Accepted/Rejected)
+                                                shortlistingStatus.map((status, index) => { // iterate through 'shortlistingStatus' array to render status options
                                                     return (
                                                         <div 
-                                                            onClick={() => statusHandler(status, item?._id)} // call statusHandler with selected status and applicant ID
+                                                            onClick={() => statusHandler(status, item?._id)} // call statusHandler with selected status and applicant id on click
                                                             key={index} 
                                                             className='flex w-fit items-center my-2 cursor-pointer'
                                                         >
@@ -101,4 +98,4 @@ const ApplicantsTable = () => { // define a function component ApplicantsTable t
     )
 }
 
-export default ApplicantsTable
+export default ApplicantsTable // export ApplicantsTable component as default so it can be reused in other files
