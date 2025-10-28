@@ -1,35 +1,30 @@
-import { setSingleCompany } from '@/redux/companySlice' // import setSingleCompany action creator from companySlice to update Redux state with a specific company's data
-import { setAllJobs } from '@/redux/jobSlice' // import setAllJobs action creator from jobSlice (although not used in this hook) to update Redux state with job listings
-import { COMPANY_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant' // import API endpoint constants for company and job-related requests
-import axios from 'axios' // import axios library to perform HTTP requests to the backend
-import { useEffect } from 'react' // import useEffect hook from React to execute side effects after component mounting
-import { useDispatch } from 'react-redux' // import useDispatch hook from react-redux to dispatch actions to the Redux store
+import { setSingleCompany } from '@/redux/companySlice'; // import setSingleCompany action creator from companySlice to update redux state with data of a specific company
+import { setAllJobs } from '@/redux/jobSlice'; // import setAllJobs action creator from jobSlice though not used here, typically used to store job listings
+import { COMPANY_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant'; // import api endpoint constants for company and job-related backend requests
+import axios from 'axios'; // import axios to make http requests for fetching company data
+import { useEffect } from 'react'; // import useEffect hook to perform side effects like api calls after component mounts
+import { useDispatch } from 'react-redux'; // import useDispatch hook to dispatch redux actions
 
-const useGetCompanyById = (companyId) => { // define a custom hook named useGetCompanyById that takes companyId as an argument to fetch data for a specific company
-    const dispatch = useDispatch(); // initialize dispatch function for sending actions to the Redux store
+const useGetCompanyById = (companyId) => { // define custom hook useGetCompanyById that accepts companyId to fetch and store a specific company's data
+    const dispatch = useDispatch(); // initialize dispatch function to send actions to redux store
     
-    useEffect(() => { // call useEffect to perform the fetch operation whenever companyId or dispatch changes
-        const fetchSingleCompany = async () => { // define an asynchronous function fetchSingleCompany to request a company's data from the API
-            try { // start a try block to handle potential API errors
-                const res = await axios.get( // make an HTTP GET request using axios to fetch a specific company's data
-                    `${COMPANY_API_END_POINT}/get/${companyId}`, // construct the API URL dynamically using the companyId
-                    { withCredentials: true } // include credentials like cookies in the request for authentication
+    useEffect(() => { // run effect whenever companyId or dispatch changes to ensure data stays updated
+        const fetchSingleCompany = async () => { // define async function fetchSingleCompany to request company data from backend
+            try { // use try block to safely handle api request and potential errors
+                const res = await axios.get( // make http get request using axios to fetch company data
+                    `${COMPANY_API_END_POINT}/get/${companyId}`, // dynamically append companyId to endpoint to request specific company details
+                    { withCredentials: true } // include credentials for authentication during the request
                 );
-                
-                console.log(res.data.company); // log the retrieved company data to the console for debugging
-                
-                if (res.data.success) { // check if the response indicates success through the success property
-                    dispatch( // dispatch an action to update Redux state with the fetched company data
-                        setSingleCompany(res.data.company) // call setSingleCompany with res.data.company to store the single company's data in Redux
-                    );
+                console.log(res.data.company); // log company data from api response for debugging purposes
+                if (res.data.success) { // check if api response indicates success
+                    dispatch(setSingleCompany(res.data.company)); // dispatch setSingleCompany action with fetched data to update redux store
                 }
-            } catch (error) { // catch any errors that occur during the API request
-                console.log(error); // log the error object to the console for debugging
+            } catch (error) { // handle any errors that occur during api request
+                console.log(error); // log error details to console for debugging
             }
-        }
-        
-        fetchSingleCompany(); // invoke fetchSingleCompany immediately to start fetching company data
-    }, [companyId, dispatch]); // provide companyId and dispatch as dependencies to re-run the effect if either changes
-}
+        };
+        fetchSingleCompany(); // immediately invoke fetchSingleCompany after component mounts to fetch company data
+    }, [companyId, dispatch]); // re-run effect if companyId or dispatch reference changes to maintain correct data
+};
 
-export default useGetCompanyById; // export the custom hook as the default export to be reused across components for fetching a single company's data
+export default useGetCompanyById; // export custom hook as default so it can be reused in other components to fetch a company's details by id
