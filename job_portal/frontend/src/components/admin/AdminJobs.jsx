@@ -35,9 +35,9 @@ const AdminJobs = () => { // define a functional component named 'AdminJobs' to 
                         placeholder="Filter by name, role"
                         onChange={(e) => setInput(e.target.value)} // update input state with new text when user types in search field
                     />
-                    <Button onClick={() => navigate("/admin/jobs/create")}>New Jobs</Button> // navigate to job creation page when button is clicked
+                    <Button onClick={() => navigate("/admin/jobs/create")}>New Jobs</Button> {/* navigate to job creation page when button is clicked */}
                 </div>
-                <AdminJobsTable /> // render table component displaying all admin job listings
+                <AdminJobsTable /> {/* render table component displaying all admin job listings */}
             </div>
         </div>
     )
