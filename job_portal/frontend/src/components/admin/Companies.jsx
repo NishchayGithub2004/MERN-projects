@@ -35,9 +35,9 @@ const Companies = () => { // define a functional component named 'Companies' to 
                         placeholder="Filter by name"
                         onChange={(e) => setInput(e.target.value)} // update input state whenever user types a character in input field
                     />
-                    <Button onClick={() => navigate("/admin/companies/create")}>New Company</Button> // navigate to company creation page when the button is clicked
+                    <Button onClick={() => navigate("/admin/companies/create")}>New Company</Button> {/* navigate to company creation page when the button is clicked */}
                 </div>
-                <CompaniesTable /> // render the CompaniesTable component to display list of all fetched companies
+                <CompaniesTable /> {/* render the CompaniesTable component to display list of all fetched companies */}
             </div>
         </div>
     )
