@@ -21,7 +21,7 @@ const AdminJobsTable = () => { // define a functional component named 'AdminJobs
                 job?.title?.toLowerCase().includes(searchJobByText.toLowerCase()) || // include job if its title matches search text ignoring case
                 job?.company?.name.toLowerCase().includes(searchJobByText.toLowerCase()) // include job if its company name matches search text ignoring case
             )
-        }) // close filter callback
+        })
         setFilterJobs(filteredJobs) // update local state 'filterJobs' with new filtered results
     }, [allAdminJobs, searchJobByText]) // run effect whenever 'allAdminJobs' or 'searchJobByText' changes to keep job list updated
 
