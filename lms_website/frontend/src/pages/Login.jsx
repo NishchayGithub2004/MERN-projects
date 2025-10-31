@@ -1,198 +1,190 @@
-import { Button } from "@/components/ui/button"; // import Button component for form actions
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"; // import Card components for UI layout
-import { Input } from "@/components/ui/input"; // import Input component for form fields
-import { Label } from "@/components/ui/label"; // import Label component for form fields
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // import Tabs components for switching between login/signup
-import { useLoginUserMutation, useRegisterUserMutation } from "@/features/api/authApi"; // import RTK query hooks for login and signup
-import { Loader2 } from "lucide-react"; // import loader icon for loading states
-import { useEffect, useState } from "react"; // import React hooks
-import { useNavigate } from "react-router-dom"; // import useNavigate for redirecting after login
-import { toast } from "sonner"; // import toast for notifications
+import { Button } from "@/components/ui/button"; // import Button component from shadCN UI for triggering form actions
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"; // import Card components to structure login/signup forms visually
+import { Input } from "@/components/ui/input"; // import Input component to take user input fields
+import { Label } from "@/components/ui/label"; // import Label component to describe each input field
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // import Tabs system for toggling between signup and login forms
+import { useLoginUserMutation, useRegisterUserMutation } from "@/features/api/authApi"; // import RTK Query hooks to handle login and registration API calls
+import { Loader2 } from "lucide-react"; // import Loader2 icon for loading animation
+import { useEffect, useState } from "react"; // import React hooks to handle component state and side effects
+import { useNavigate } from "react-router-dom"; // import navigation hook to redirect user after authentication
+import { toast } from "sonner"; // import toast function to show success/error messages
 
-const Login = () => { // define Login component for user authentication
-    const [signupInput, setSignupInput] = useState({ // state to store signup form inputs
-        name: "",
-        email: "",
-        password: "",
+const Login = () => { // define functional component 'Login' to render signup and login forms
+    const [signupInput, setSignupInput] = useState({ // initialize state to manage signup form inputs
+        name: "", // store name value
+        email: "", // store email value
+        password: "", // store password value
     });
 
-    const [loginInput, setLoginInput] = useState({ email: "", password: "" }); // state to store login form inputs
+    const [loginInput, setLoginInput] = useState({ email: "", password: "" }); // initialize state for login form inputs with empty values
 
-    const [ // setup registerUser mutation for signup
-        registerUser,
+    const [ // destructure register mutation hook to handle signup requests
+        registerUser, // function to call signup mutation
         {
-            data: registerData, // response data after signup
-            error: registerError, // error if signup fails
-            isLoading: registerIsLoading, // loading state for signup
-            isSuccess: registerIsSuccess, // success flag for signup
+            data: registerData, // holds API response data after signup
+            error: registerError, // holds error object if signup fails
+            isLoading: registerIsLoading, // indicates loading state for signup request
+            isSuccess: registerIsSuccess, // boolean flag indicating signup success
         },
     ] = useRegisterUserMutation();
     
-    const [ // setup loginUser mutation for login
-        loginUser,
+    const [ // destructure login mutation hook to handle login requests
+        loginUser, // function to call login mutation
         {
-            data: loginData, // response data after login
-            error: loginError, // error if login fails
-            isLoading: loginIsLoading, // loading state for login
-            isSuccess: loginIsSuccess, // success flag for login
+            data: loginData, // holds API response data after login
+            error: loginError, // holds error object if login fails
+            isLoading: loginIsLoading, // indicates loading state for login request
+            isSuccess: loginIsSuccess, // boolean flag indicating login success
         },
     ] = useLoginUserMutation();
     
-    const navigate = useNavigate(); // initialize navigation hook
+    const navigate = useNavigate(); // create navigation instance to redirect user post-login
 
-    const changeInputHandler = (e, type) => { // handle changes in form inputs
-        const { name, value } = e.target; // get name and value of input field
-        
-        if (type === "signup") {
-            setSignupInput({ ...signupInput, [name]: value }); // update signup state
-        } else {
-            setLoginInput({ ...loginInput, [name]: value }); // update login state
+    const changeInputHandler = (e, type) => { // define handler to update input fields dynamically
+        const { name, value } = e.target; // extract field name and value from event
+        if (type === "signup") { // if form type is signup
+            setSignupInput({ ...signupInput, [name]: value }); // update signupInput state with new field value
+        } else { // if form type is login
+            setLoginInput({ ...loginInput, [name]: value }); // update loginInput state with new field value
         }
     };
 
-    const handleRegistration = async (type) => { // handle form submission for login/signup
-        const inputData = type === "signup" ? signupInput : loginInput; // select input data based on type
-        const action = type === "signup" ? registerUser : loginUser; // select mutation action based on type
-        await action(inputData); // execute mutation
+    const handleRegistration = async (type) => { // define function to handle submission for both login and signup
+        const inputData = type === "signup" ? signupInput : loginInput; // select appropriate input data based on form type
+        const action = type === "signup" ? registerUser : loginUser; // choose correct mutation function based on form type
+        await action(inputData); // trigger API call using selected mutation
     };
 
-    useEffect(() => { // handle success and error messages for login and signup
-        if (registerIsSuccess && registerData) {
-            toast.success(registerData.message || "Signup successful."); // show signup success toast
+    useEffect(() => { // define side effect to handle authentication responses
+        if (registerIsSuccess && registerData) { // if signup is successful
+            toast.success(registerData.message || "Signup successful."); // display success toast notification
         }
-        
-        if (registerError) {
-            toast.error(registerError.data.message || "Signup Failed"); // show signup error toast
+        if (registerError) { // if signup fails
+            toast.error(registerError.data.message || "Signup Failed"); // display error toast message
         }
-        
-        if (loginIsSuccess && loginData) {
-            toast.success(loginData.message || "Login successful."); // show login success toast
-            navigate("/"); // redirect to homepage after successful login
+        if (loginIsSuccess && loginData) { // if login is successful
+            toast.success(loginData.message || "Login successful."); // show success notification
+            navigate("/"); // redirect to home page
         }
-        
-        if (loginError) {
-            toast.error(loginError.data.message || "Login Failed"); // show login error toast
+        if (loginError) { // if login fails
+            toast.error(loginError.data.message || "Login Failed"); // show error notification
         }
     }, [
-        loginIsLoading, // dependency for login loading state
-        registerIsLoading, // dependency for signup loading state
-        loginData, // dependency for login response
-        registerData, // dependency for signup response
-        loginError, // dependency for login error
-        registerError, // dependency for signup error
+        loginIsLoading, // re-run when login loading state changes
+        registerIsLoading, // re-run when signup loading state changes
+        loginData, // re-run when login data changes
+        registerData, // re-run when signup data changes
+        loginError, // re-run when login error changes
+        registerError, // re-run when signup error changes
     ]);
 
     return (
-        <div className="flex items-center w-full justify-center mt-20">
-            <Tabs defaultValue="login" className="w-[400px]">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="signup">Signup</TabsTrigger>
-                    <TabsTrigger value="login">Login</TabsTrigger>
+        <div className="flex items-center w-full justify-center mt-20"> {/* wrapper for centered layout */}
+            <Tabs defaultValue="login" className="w-[400px]"> {/* define tabs for toggling login/signup */}
+                <TabsList className="grid w-full grid-cols-2"> {/* container for tab buttons */}
+                    <TabsTrigger value="signup">Signup</TabsTrigger> {/* trigger to open signup tab */}
+                    <TabsTrigger value="login">Login</TabsTrigger> {/* trigger to open login tab */}
                 </TabsList>
-                <TabsContent value="signup">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Signup</CardTitle>
-                            <CardDescription>
-                                Create a new account and click signup when you're done.
-                            </CardDescription>
+
+                <TabsContent value="signup"> {/* content for signup form */}
+                    <Card> {/* wrapper card for signup section */}
+                        <CardHeader> {/* header for signup card */}
+                            <CardTitle>Signup</CardTitle> {/* title text */}
+                            <CardDescription>Create a new account and click signup when you're done.</CardDescription> {/* short form description */}
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                            <div className="space-y-1">
-                                <Label htmlFor="name">Name</Label>
+                        <CardContent className="space-y-2"> {/* section containing input fields */}
+                            <div className="space-y-1"> {/* field wrapper for name */}
+                                <Label htmlFor="name">Name</Label> {/* label for name input */}
                                 <Input
-                                    type="text"
-                                    name="name"
-                                    value={signupInput.name}
-                                    onChange={(e) => changeInputHandler(e, "signup")}
-                                    placeholder="Eg. patel"
-                                    required="true"
+                                    type="text" // input type text for name
+                                    name="name" // controlled input name
+                                    value={signupInput.name} // bind current value from state
+                                    onChange={(e) => changeInputHandler(e, "signup")} // handle input change for signup
+                                    placeholder="Eg. patel" // hint text
+                                    required="true" // mark as required
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="username">Email</Label>
+                            <div className="space-y-1"> {/* field wrapper for email */}
+                                <Label htmlFor="username">Email</Label> {/* label for email field */}
                                 <Input
-                                    type="email"
-                                    name="email"
-                                    value={signupInput.email}
-                                    onChange={(e) => changeInputHandler(e, "signup")}
-                                    placeholder="Eg. patel@gmail.com"
-                                    required="true"
+                                    type="email" // input type email
+                                    name="email" // controlled input name
+                                    value={signupInput.email} // bind current value from state
+                                    onChange={(e) => changeInputHandler(e, "signup")} // handle email change for signup
+                                    placeholder="Eg. patel@gmail.com" // hint text
+                                    required="true" // mark as required
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="username">Password</Label>
+                            <div className="space-y-1"> {/* field wrapper for password */}
+                                <Label htmlFor="username">Password</Label> {/* label for password field */}
                                 <Input
-                                    type="password"
-                                    name="password"
-                                    value={signupInput.password}
-                                    onChange={(e) => changeInputHandler(e, "signup")}
-                                    placeholder="Eg. xyz"
-                                    required="true"
+                                    type="password" // input type password
+                                    name="password" // controlled input name
+                                    value={signupInput.password} // bind current value from state
+                                    onChange={(e) => changeInputHandler(e, "signup")} // handle password change for signup
+                                    placeholder="Eg. xyz" // hint text
+                                    required="true" // mark as required
                                 />
                             </div>
                         </CardContent>
-                        <CardFooter>
+                        <CardFooter> {/* footer for signup form */}
                             <Button
-                                disabled={registerIsLoading}
-                                onClick={() => handleRegistration("signup")}
+                                disabled={registerIsLoading} // disable button during API request
+                                onClick={() => handleRegistration("signup")} // handle signup on click
                             >
-                                {registerIsLoading ? (
+                                {registerIsLoading ? ( // check if signup request is loading
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please
-                                        wait
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait {/* show loader icon and message */}
                                     </>
                                 ) : (
-                                    "Signup"
+                                    "Signup" // show button text when not loading
                                 )}
                             </Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
-                <TabsContent value="login">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Login</CardTitle>
-                            <CardDescription>
-                                Login your password here. After signup, you'll be logged in.
-                            </CardDescription>
+
+                <TabsContent value="login"> {/* content for login form */}
+                    <Card> {/* wrapper card for login section */}
+                        <CardHeader> {/* header for login card */}
+                            <CardTitle>Login</CardTitle> {/* title text */}
+                            <CardDescription>Login your password here. After signup, you'll be logged in.</CardDescription> {/* short form description */}
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                            <div className="space-y-1">
-                                <Label htmlFor="current">Email</Label>
+                        <CardContent className="space-y-2"> {/* section containing input fields */}
+                            <div className="space-y-1"> {/* field wrapper for email */}
+                                <Label htmlFor="current">Email</Label> {/* label for email input */}
                                 <Input
-                                    type="email"
-                                    name="email"
-                                    value={loginInput.email}
-                                    onChange={(e) => changeInputHandler(e, "login")}
-                                    placeholder="Eg. patel@gmail.com"
-                                    required="true"
+                                    type="email" // input type email
+                                    name="email" // controlled input name
+                                    value={loginInput.email} // bind email value from login state
+                                    onChange={(e) => changeInputHandler(e, "login")} // handle email change for login
+                                    placeholder="Eg. patel@gmail.com" // hint text
+                                    required="true" // mark as required
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="new">Password</Label>
+                            <div className="space-y-1"> {/* field wrapper for password */}
+                                <Label htmlFor="new">Password</Label> {/* label for password input */}
                                 <Input
-                                    type="password"
-                                    name="password"
-                                    value={loginInput.password}
-                                    onChange={(e) => changeInputHandler(e, "login")}
-                                    placeholder="Eg. xyz"
-                                    required="true"
+                                    type="password" // input type password
+                                    name="password" // controlled input name
+                                    value={loginInput.password} // bind password value from login state
+                                    onChange={(e) => changeInputHandler(e, "login")} // handle password change for login
+                                    placeholder="Eg. xyz" // hint text
+                                    required="true" // mark as required
                                 />
                             </div>
                         </CardContent>
-                        <CardFooter>
+                        <CardFooter> {/* footer for login form */}
                             <Button
-                                disabled={loginIsLoading}
-                                onClick={() => handleRegistration("login")}
+                                disabled={loginIsLoading} // disable button during API request
+                                onClick={() => handleRegistration("login")} // handle login on click
                             >
-                                {loginIsLoading ? (
+                                {loginIsLoading ? ( // check if login request is loading
                                     <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please
-                                        wait
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait {/* show loader icon and message */}
                                     </>
                                 ) : (
-                                    "Login"
+                                    "Login" // show button text when not loading
                                 )}
                             </Button>
                         </CardFooter>
@@ -203,4 +195,4 @@ const Login = () => { // define Login component for user authentication
     );
 };
 
-export default Login;
+export default Login; // export Login component for use in routes
