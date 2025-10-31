@@ -1,137 +1,123 @@
-import { Badge } from "@/components/ui/badge"; // import 'Badge' component from shadCN UI library
-import { Button } from "@/components/ui/button"; // import 'Button' component from shadCN UI library
-import { Card, CardContent, CardTitle } from "@/components/ui/card"; // import these card related components from shadCN UI library
-import { useCompleteCourseMutation, useGetCourseProgressQuery, useInCompleteCourseMutation, useUpdateLectureProgressMutation } from "@/features/api/courseProgressApi"; // import these hooks to manage course progress related states
-import { CheckCircle, CheckCircle2, CirclePlay } from "lucide-react"; // import these icons from lucide-react library
-import React, { useEffect, useState } from "react"; // import 'useEffect' hook to run side effects and 'useState' hook to manage states
-import { useParams } from "react-router-dom"; // import 'useParams' hook from react-router-dom library to access URL parameters
-import { toast } from "sonner"; // import toast to make pop-up messages
+import { Badge } from "@/components/ui/badge"; // import Badge component from shadcn/ui for displaying completion status
+import { Button } from "@/components/ui/button"; // import Button component from shadcn/ui for clickable actions
+import { Card, CardContent, CardTitle } from "@/components/ui/card"; // import Card components for structured lecture display
+import { useCompleteCourseMutation, useGetCourseProgressQuery, useInCompleteCourseMutation, useUpdateLectureProgressMutation } from "@/features/api/courseProgressApi"; // import mutation and query hooks for managing course progress
+import { CheckCircle, CheckCircle2, CirclePlay } from "lucide-react"; // import icons for indicating play state and completion
+import React, { useEffect, useState } from "react"; // import React, useEffect for side effects, and useState for local state management
+import { useParams } from "react-router-dom"; // import hook to access route parameters
+import { toast } from "sonner"; // import toast notification library for success messages
 
-const CourseProgress = () => { // define a functional component named 'CourseProgress' that doesn't take any props
-    const params = useParams(); // create an instance of 'useParams' to access URL parameters
-    const courseId = params.courseId; // extract 'courseId' from URL parameter
+const CourseProgress = () => { // define functional component CourseProgress to manage and display course progress
+    const params = useParams(); // extract parameters from route
+    const courseId = params.courseId; // get courseId value from params
 
-    const { data, isLoading, isError, refetch } = useGetCourseProgressQuery(courseId); // extract these things from 'useGetCourseProgressQuery' with 'courseId' as argument
+    const { data, isLoading, isError, refetch } = useGetCourseProgressQuery(courseId); // fetch course progress data using RTK query hook with courseId
 
-    const [updateLectureProgress] = useUpdateLectureProgressMutation(); // create an array intance of 'useUpdateLectureProgressMutation' hook
+    const [updateLectureProgress] = useUpdateLectureProgressMutation(); // create mutation function for updating lecture progress
 
-    const [
-        completeCourse,
-        { data: markCompleteData, isSuccess: completedSuccess },
-    ] = useCompleteCourseMutation(); // extract 'completeCourse', 'markCompleteData' as 'data' and 'completedSuccess' as 'isSuccess' from 'useCompleteCourseMutation' hook
+    const [completeCourse, { data: markCompleteData, isSuccess: completedSuccess }] = useCompleteCourseMutation(); // create mutation function and destructure data and success flag for marking course as complete
 
-    const [
-        inCompleteCourse,
-        { data: markInCompleteData, isSuccess: inCompletedSuccess },
-    ] = useInCompleteCourseMutation(); // extract 'icCompleteCourse', 'markInCompleteData' as 'data' and 'inCompletedSuccess' as 'isSuccess' from 'useInCompleteCourseMutation' hook
+    const [inCompleteCourse, { data: markInCompleteData, isSuccess: inCompletedSuccess }] = useInCompleteCourseMutation(); // create mutation function and destructure data and success flag for marking course as incomplete
 
-    useEffect(() => { // use 'useEffect' hook to run side-effects
-        if (completedSuccess) { // if 'completedSuccess' is true
-            refetch(); // call 'refetch' function
-            toast.success(markCompleteData.message); // show toast message
+    useEffect(() => { // use side effect to refetch and show notifications when completion status changes
+        if (completedSuccess) { // check if course marked complete successfully
+            refetch(); // refresh course data
+            toast.success(markCompleteData.message); // show success message for course completion
         }
-
-        if (inCompletedSuccess) { // if 'inCompletedSuccess' is true
-            refetch(); // call 'refetch' function
-            toast.success(markInCompleteData.message); // show toast message
+        if (inCompletedSuccess) { // check if course marked incomplete successfully
+            refetch(); // refresh course data
+            toast.success(markInCompleteData.message); // show success message for marking incomplete
         }
-    }, [completedSuccess, inCompletedSuccess]); // run effect when value of 'completedSuccess' or 'inCompletedSuccess' changes by writing them both in dependency array
+    }, [completedSuccess, inCompletedSuccess]); // run effect when either completion status changes
 
-    const [currentLecture, setCurrentLecture] = useState(null); // state to track currently selected lecture
+    const [currentLecture, setCurrentLecture] = useState(null); // maintain currently selected lecture in state
 
-    if (isLoading) return <p>Loading...</p>; // show loading message while fetching data
-    
-    if (isError) return <p>Failed to load course details</p>; // show error message if fetch fails
+    if (isLoading) return <p>Loading...</p>; // display loading state while data fetch is in progress
 
-    const { courseDetails, progress, completed } = data.data; // extract these things from 'data' property of 'data' object
-    
-    const { courseTitle } = courseDetails; // extract 'courseTitle' from 'courseDetails'
+    if (isError) return <p>Failed to load course details</p>; // display error message if data fetch fails
 
-    const initialLecture = currentLecture || (courseDetails.lectures && courseDetails.lectures[0]);
+    const { courseDetails, progress, completed } = data.data; // destructure course details, progress, and completion status from response
+    const { courseTitle } = courseDetails; // extract course title from course details
+    const initialLecture = currentLecture || (courseDetails.lectures && courseDetails.lectures[0]); // determine which lecture to show by default
 
-    const isLectureCompleted = (lectureId) => { // define a function named 'isLectureCompleted' that takes 'lectureId' as argument
-        // this function checks if lecture with ID 'lectureId' has been completed or not
-        return progress.some((prog) => prog.lectureId === lectureId && prog.viewed);
+    const isLectureCompleted = (lectureId) => { // define function to check if a lecture is marked completed
+        return progress.some((prog) => prog.lectureId === lectureId && prog.viewed); // check if lectureId exists in viewed progress array
     };
 
-    const handleLectureProgress = async (lectureId) => { // define an async function named 'handleLectureProgress' that takes 'lectureId' as argument
-        await updateLectureProgress({ courseId, lectureId }); // call 'updateLectureProgress' and give 'courseId' and 'lectureId' as argument to it
-        refetch(); // call 'refetch' function
+    const handleLectureProgress = async (lectureId) => { // define async function to update progress when lecture starts playing
+        await updateLectureProgress({ courseId, lectureId }); // call mutation to mark lecture as viewed
+        refetch(); // refresh progress data after update
     };
 
-    const handleSelectLecture = (lecture) => { // define a function named 'handleSelecLecture' that takes 'lecture' as argument
-        setCurrentLecture(lecture); // call 'setCurrentLecture' for 'lecture' as argument
-        handleLectureProgress(lecture._id); // call 'handleLectureProgress' for '_id' value of 'lecture' object as argument
+    const handleSelectLecture = (lecture) => { // define function to handle lecture selection from list
+        setCurrentLecture(lecture); // update currentLecture state with selected lecture
+        handleLectureProgress(lecture._id); // update progress for selected lecture
     };
 
-    const handleCompleteCourse = async () => { // define an async function named 'handleCompleteCourse' to handle complete courses
-        await completeCourse(courseId); // call 'completeCourse' function with 'courseId' as argument
+    const handleCompleteCourse = async () => { // define async function to mark entire course as completed
+        await completeCourse(courseId); // call mutation to complete course
     };
 
-    const handleInCompleteCourse = async () => { // define an async function named 'handleInCompleteCourse' to handle incomplete courses
-        await inCompleteCourse(courseId); // call 'inCompleteCourse' function with 'courseId' as argument
+    const handleInCompleteCourse = async () => { // define async function to mark course as incomplete
+        await inCompleteCourse(courseId); // call mutation to revert completion status
     };
 
     return (
-        <div className="max-w-7xl mx-auto p-4">
-            <div className="flex justify-between mb-4">
-                <h1 className="text-2xl font-bold">{courseTitle}</h1> {/* display course title */}
+        <div className="max-w-7xl mx-auto p-4"> {/* main container for course progress page */}
+            <div className="flex justify-between mb-4"> {/* header section with title and complete button */}
+                <h1 className="text-2xl font-bold">{courseTitle}</h1> {/* display dynamic course title */}
                 <Button
-                    onClick={completed ? handleInCompleteCourse : handleCompleteCourse} // if value of 'completed' is true, call 'handleInCompleteCourse' function when this button is clicked, otherwise call 'handleCompleteCourse' function
-                    variant={completed ? "outline" : "default"}
+                    onClick={completed ? handleInCompleteCourse : handleCompleteCourse} // toggle complete/incomplete status based on current completion state
+                    variant={completed ? "outline" : "default"} // change button style accordingly
                 >
-                    {completed ? (
+                    {completed ? ( // conditionally render completed UI
                         <div className="flex items-center">
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            <span>Completed</span>
+                            <CheckCircle className="h-4 w-4 mr-2" /> {/* render completion check icon */}
+                            <span>Completed</span> {/* label showing completed status */}
                         </div>
                     ) : (
-                        "Mark as completed"
+                        "Mark as completed" // button label for marking course as completed
                     )}
                 </Button>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-1 md:w-3/5 h-fit rounded-lg shadow-lg p-4">
+            <div className="flex flex-col md:flex-row gap-6"> {/* layout for video player and lecture list */}
+                <div className="flex-1 md:w-3/5 h-fit rounded-lg shadow-lg p-4"> {/* left section for video display */}
                     <div>
                         <video
-                            src={currentLecture?.videoUrl || initialLecture.videoUrl} 
-                            controls
+                            src={currentLecture?.videoUrl || initialLecture.videoUrl} // dynamically set video URL for selected or initial lecture
+                            controls // enable default video controls
                             className="w-full h-auto md:rounded-lg"
                             onPlay={() =>
-                                handleLectureProgress(currentLecture?._id || initialLecture._id) // when the video is played, call 'handleLectureProgress' for unique ID of 'currentLecture' object if it is available, otherwise for 'initialLecture' object
+                                handleLectureProgress(currentLecture?._id || initialLecture._id) // mark lecture as viewed when video starts playing
                             }
                         />
                     </div>
-                    <div className="mt-2">
+                    <div className="mt-2"> {/* section showing lecture title below video */}
                         <h3 className="font-medium text-lg">
                             {`Lecture ${courseDetails.lectures.findIndex(
-                                (lec) =>
-                                    lec._id === (currentLecture?._id || initialLecture._id)
+                                (lec) => lec._id === (currentLecture?._id || initialLecture._id)
                             ) + 1
-                                } : ${currentLecture?.lectureTitle || initialLecture.lectureTitle
-                                }`} {/* dynamically display lecture number and title */}
+                                } : ${currentLecture?.lectureTitle || initialLecture.lectureTitle}`} {/* render current lecture number and title */}
                         </h3>
                     </div>
                 </div>
-                <div className="flex flex-col w-full md:w-2/5 border-t md:border-t-0 md:border-l border-gray-200 md:pl-4 pt-4 md:pt-0">
-                    <h2 className="font-semibold text-xl mb-4">Course Lecture</h2> {/* section title */}
-                    <div className="flex-1 overflow-y-auto">
-                        {courseDetails?.lectures.map((lecture) => ( // iterate over 'lectures' array of 'courseDetails' object as 'lecture'
+
+                <div className="flex flex-col w-full md:w-2/5 border-t md:border-t-0 md:border-l border-gray-200 md:pl-4 pt-4 md:pt-0"> {/* right section for lecture list */}
+                    <h2 className="font-semibold text-xl mb-4">Course Lecture</h2> {/* section heading */}
+                    <div className="flex-1 overflow-y-auto"> {/* scrollable list container */}
+                        {courseDetails?.lectures.map((lecture) => ( // map through lectures array to render each lecture card
                             <Card
-                                key={lecture._id}
-                                className={`mb-3 hover:cursor-pointer transition transform ${lecture._id === currentLecture?._id // allot button color only if value of '_id' property of 'lecture' object is the same as that of 'currentLecture'
-                                    ? "bg-gray-200 dark:dark:bg-gray-800"
-                                    : ""
-                                    } `}
-                                onClick={() => handleSelectLecture(lecture)} // clicking this card calls 'handleSelectLecture' function for 'lecture' as argument
+                                key={lecture._id} // assign unique key for each lecture
+                                className={`mb-3 hover:cursor-pointer transition transform ${lecture._id === currentLecture?._id ? "bg-gray-200 dark:bg-gray-800" : ""}`} // highlight selected lecture
+                                onClick={() => handleSelectLecture(lecture)} // handle click to select and play lecture
                             >
-                                <CardContent className="flex items-center justify-between p-4">
+                                <CardContent className="flex items-center justify-between p-4"> {/* layout for lecture item */}
                                     <div className="flex items-center">
-                                        {isLectureCompleted(lecture._id) ? ( // if calling 'isLectureCompleted' function for unique ID of 'lecture' object returns true, then render first icon, otherwise render second
-                                            <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                                        {isLectureCompleted(lecture._id) ? ( // check and render completed or not icon
+                                            <CheckCircle2 size={24} className="text-green-500 mr-2" /> // completed lecture icon
                                         ) : (
-                                            <CirclePlay size={24} className="text-gray-500 mr-2" /
+                                            <CirclePlay size={24} className="text-gray-500 mr-2" /> // pending lecture icon
                                         )}
                                         <div>
                                             <CardTitle className="text-lg font-medium">
@@ -139,12 +125,9 @@ const CourseProgress = () => { // define a functional component named 'CoursePro
                                             </CardTitle>
                                         </div>
                                     </div>
-                                    {isLectureCompleted(lecture._id) && ( // if calling 'isLectureCompleted' function for unique ID of 'lecture' object returns true, then render the following content
-                                        <Badge
-                                            variant={"outline"}
-                                            className="bg-green-200 text-green-600"
-                                        >
-                                            Completed
+                                    {isLectureCompleted(lecture._id) && ( // if lecture completed, show badge
+                                        <Badge variant={"outline"} className="bg-green-200 text-green-600">
+                                            Completed {/* text label inside badge */}
                                         </Badge>
                                     )}
                                 </CardContent>
@@ -157,4 +140,4 @@ const CourseProgress = () => { // define a functional component named 'CoursePro
     );
 };
 
-export default CourseProgress;
+export default CourseProgress; // export CourseProgress component for use in routes or parent components
