@@ -1,67 +1,55 @@
-import { Button } from "@/components/ui/button"; // import 'Button' component from shadCN UI
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // import these dialog related components from shadCN UI
-import { Input } from "@/components/ui/input"; // import 'Input' component from shadCN UI
-import { Label } from "@/components/ui/label"; // import 'Label' component from shadCN UI
-import { Loader2, Plus } from "lucide-react"; // import 'Loader2' and 'Plus' icons from lucide-react
-import React, { type FormEvent, useState } from "react"; // import 'React' for JSX, 'useState' hook to manage states and their values, and 'FormEvent' type to handle form submission events
-import EditMenu from "./EditMenu"; // import 'EditMenu' component
-import { type MenuFormSchema, menuSchema } from "@/schema/menuSchema"; // import 'MenuFormSchema' to create menu related form fields and 'menuSchema' for validation of menu related form fields
-import { useMenuStore } from "@/store/useMenuStore"; // import 'useMenuStore' hook to access menu related states and actions
-import { useRestaurantStore } from "@/store/useRestaurantStore"; // import 'useRestaurantStore' hook to access restaurant related states and actions
+import { Button } from "@/components/ui/button"; // import Button component from shadcn/ui library to render styled button elements
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // import dialog-related components from shadcn/ui library to create modal dialog for adding menu
+import { Input } from "@/components/ui/input"; // import Input component from shadcn/ui library for text and number input fields
+import { Label } from "@/components/ui/label"; // import Label component from shadcn/ui library for labeling input fields
+import { Loader2, Plus } from "lucide-react"; // import Loader2 and Plus icons from lucide-react for showing loading state and add icon
+import React, { type FormEvent, useState } from "react"; // import React for JSX, useState for managing component states, and FormEvent type for handling form submission
+import EditMenu from "./EditMenu"; // import EditMenu component for editing existing menu items
+import { type MenuFormSchema, menuSchema } from "@/schema/menuSchema"; // import MenuFormSchema type for defining input structure and menuSchema for validation
+import { useMenuStore } from "@/store/useMenuStore"; // import useMenuStore hook to manage menu-related state and actions like creating menu
+import { useRestaurantStore } from "@/store/useRestaurantStore"; // import useRestaurantStore hook to manage restaurant-related state like menus
 
-const AddMenu = () => {
-    const [input, setInput] = useState<MenuFormSchema>({ // create a state named 'input' of type 'MenuFormSchema' using 'useState' hook and a function 'setInput' to update it's state, 'input' contains following fields with the following initial values
-        name: "", // 'name' with empty string as initial value
-        description: "", // 'description' with empty string as initial value
-        price: 0, // 'price' with 0 as initial value
-        image: undefined, // 'image' with 'undefined' as initial value
+const AddMenu = () => { // define functional component AddMenu to handle creation and editing of restaurant menus
+    const [input, setInput] = useState<MenuFormSchema>({ // create state input of type MenuFormSchema and function setInput to update its values
+        name: "", // initialize name field as empty string
+        description: "", // initialize description field as empty string
+        price: 0, // initialize price field with value 0
+        image: undefined, // initialize image field as undefined
     });
 
-    const [open, setOpen] = useState<boolean>(false);
+    const [open, setOpen] = useState<boolean>(false); // create boolean state open to manage add-menu dialog visibility
+    const [editOpen, setEditOpen] = useState<boolean>(false); // create boolean state editOpen to manage edit-menu dialog visibility
+    const [selectedMenu, setSelectedMenu] = useState<any>(); // create selectedMenu state to hold currently selected menu for editing
+    const [error, setError] = useState<Partial<MenuFormSchema>>({}); // create error state with Partial<MenuFormSchema> type to hold field-specific validation messages
 
-    const [editOpen, setEditOpen] = useState<boolean>(false);
+    const { loading, createMenu } = useMenuStore(); // destructure loading and createMenu from useMenuStore to manage loading state and perform menu creation
+    const { restaurant } = useRestaurantStore(); // destructure restaurant from useRestaurantStore to access current restaurant data
 
-    const [selectedMenu, setSelectedMenu] = useState<any>();
-
-    const [error, setError] = useState<Partial<MenuFormSchema>>({}); // using 'useState' hook, create a variable 'error' of type 'MenuFormSchema' and 'setError' function to update the values present in 'MenuFormSchema' object
-    // 'Partial' makes all the fields of 'MenuFormSchema' object optional for this particular state
-
-    const { loading, createMenu } = useMenuStore(); // extract 'loading' and 'createMenu' from 'useMenuStore' hook
-
-    const { restaurant } = useRestaurantStore(); // extract 'restaurant' from 'useRestaurantStore' hook
-
-    const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => { // create a function named 'changeEventHandler' that takes that event object as argument that responds to change in value of form field
-        const { name, value, type } = e.target; // extract 'name' 'value' and 'type' from event object ie form field
-        setInput({ ...input, [name]: type === "number" ? Number(value) : value }); // use 'setInput' function to update the values of 'input' object
-        /* using spread operator, copy pre-existing value of 'input' object and then check if value of 'type' is number ie if form field this function is called for takes numbers as input
-        if it is, then convert new input value given to form field to number, otherwise leave it as is */
+    const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => { // define changeEventHandler function to handle input field updates dynamically
+        const { name, value, type } = e.target; // extract name, value, and type from input field element
+        setInput({ ...input, [name]: type === "number" ? Number(value) : value }); // update input state, converting numeric fields appropriately before storing
     };
 
-    const submitHandler = async (e: FormEvent<HTMLFormElement>) => { // create a function named 'submitHandler' that takes form event object as argument that responds to form submission
-        e.preventDefault(); // prevent default behavior of form submission so that form isn't submitted as soon as it is submitted, this is done so that some tasks can be done before form is submitted like form field validation
+    const submitHandler = async (e: FormEvent<HTMLFormElement>) => { // define async submitHandler function to handle menu form submission
+        e.preventDefault(); // prevent default form submission to manually handle validation and data sending
 
-        const result = menuSchema.safeParse(input); // implement 'menuForm' form field validation in values of 'input' object
+        const result = menuSchema.safeParse(input); // validate input fields using menuSchema
 
-        if (!result.success) { // if validation fails
-            const fieldErrors = result.error.flatten().fieldErrors; // flatten the nested error object returned due to failure of validation and using 'fieldErrors' extract the error message from the flattened error object
-            setError(fieldErrors as Partial<MenuFormSchema>); // set 'error' to 'fieldErrors', but convert it to 'MenuFormSchema' type for type safety, 'Partial' makes all the fields of 'MenuFormSchema' object optional to have values for this particular state
-            return; // return from function so that code below this line isn't executed
+        if (!result.success) { // check if validation failed
+            const fieldErrors = result.error.flatten().fieldErrors; // flatten nested validation error structure to extract field-specific errors
+            setError(fieldErrors as Partial<MenuFormSchema>); // update error state with extracted field errors
+            return; // stop function execution to avoid submitting invalid data
         }
 
         try {
-            const formData = new FormData(); // create a new instance of 'FormData' object to store form field values
-
-            formData.append("name", input.name); // append to field named 'name' the updaed value of 'name' field
-            formData.append("description", input.description); // append to field named 'description' the updated value of 'description' field
-            formData.append("price", input.price.toString()); // append to field named 'price' the updated value of 'price' field, convert the number to string before appending
-
-            if (input.image) { // if image exists in input object
-                formData.append("image", input.image); // append to field named 'image' the updated value of 'image' field
-            }
-
-            await createMenu(formData); // call 'editMenu' function to edit the menu, '_id' is the unique identifier to signal the menu to edit/update, and 'formData' contains updated values
-        } catch (error) { // catch any errors that occur during form submission
-            console.log(error); // log them to the console for debugging purposes
+            const formData = new FormData(); // create new FormData instance to send form values as multipart/form-data
+            formData.append("name", input.name); // append name field value to formData
+            formData.append("description", input.description); // append description field value to formData
+            formData.append("price", input.price.toString()); // append price field as string to formData
+            if (input.image) formData.append("image", input.image); // append image only if an image file exists
+            await createMenu(formData); // call createMenu function with formData to create a new menu in store
+        } catch (error) { // handle any unexpected errors during async operation
+            console.log(error); // log error to console for debugging
         }
     };
 
@@ -71,10 +59,10 @@ const AddMenu = () => {
                 <h1 className="font-bold md:font-extrabold text-lg md:text-2xl">
                     Available Menus
                 </h1>
-                <Dialog open={open} onOpenChange={setOpen}> {/* this dialog box will only render if value of 'open' is true and 'setOpen' is the function that manipulates the value of 'editOpen' */}
+                <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger>
                         <Button className="bg-orange hover:bg-hoverOrange">
-                            <Plus className="mr-2" />
+                            <Plus className="mr-2" /> {/* render plus icon beside Add Menus text */}
                             Add Menus
                         </Button>
                     </DialogTrigger>
@@ -85,17 +73,17 @@ const AddMenu = () => {
                                 Create a menu that will make your restaurant stand out.
                             </DialogDescription>
                         </DialogHeader>
-                        <form onSubmit={submitHandler} className="space-y-4"> {/* when this form is submitted, 'submitHandler' function will be called */}
+                        <form onSubmit={submitHandler} className="space-y-4">
                             <div>
                                 <Label>Name</Label>
                                 <Input
                                     type="text"
                                     name="name"
                                     value={input.name}
-                                    onChange={changeEventHandler} // when value of this input field changes, then 'changeEventHandler' function will be called
+                                    onChange={changeEventHandler} // handle input change by invoking changeEventHandler for name field
                                     placeholder="Enter menu name"
                                 />
-                                {error && <span className="text-xs font-medium text-red-600">{error.name}</span>} {/* if value of 'error' is not null ie any error occurs, only then render the value of 'name' present in 'error' object */}
+                                {error && <span className="text-xs font-medium text-red-600">{error.name}</span>} // display validation error message for name field if any
                             </div>
                             <div>
                                 <Label>Description</Label>
@@ -103,10 +91,10 @@ const AddMenu = () => {
                                     type="text"
                                     name="description"
                                     value={input.description}
-                                    onChange={changeEventHandler} // when value of this input field changes, then 'changeEventHandler' function will be called
+                                    onChange={changeEventHandler} // handle input change by invoking changeEventHandler for description field
                                     placeholder="Enter menu description"
                                 />
-                                {error && <span className="text-xs font-medium text-red-600">{error.description}</span>} {/* if value of 'error' is not null ie any error occurs, only then render the value of 'description' present in 'error' object */}
+                                {error && <span className="text-xs font-medium text-red-600">{error.description}</span>} // display validation error message for description field if any
                             </div>
                             <div>
                                 <Label>Price in (Rupees)</Label>
@@ -114,10 +102,10 @@ const AddMenu = () => {
                                     type="number"
                                     name="price"
                                     value={input.price}
-                                    onChange={changeEventHandler} // when value of this input field changes, then 'changeEventHandler' function will be called
+                                    onChange={changeEventHandler} // handle input change by invoking changeEventHandler for price field
                                     placeholder="Enter menu price"
                                 />
-                                {error && <span className="text-xs font-medium text-red-600">{error.price}</span>} {/* if value of 'error' is not null ie any error occurs, only then render the value of 'price' present in 'error' object */}
+                                {error && <span className="text-xs font-medium text-red-600">{error.price}</span>} // display validation error message for price field if any
                             </div>
                             <div>
                                 <Label>Upload Menu Image</Label>
@@ -125,43 +113,42 @@ const AddMenu = () => {
                                     type="file"
                                     name="image"
                                     onChange={(e) =>
-                                        setInput({ ...input, image: e.target.files?.[0] || undefined }) // when value of this input field changes, then 'setInput' will be called to update this field to image uploaded to it
-                                        // [0] because image object is a nested array even with single image, if no image is uploaded, then set the value of this field to undefined
+                                        setInput({ ...input, image: e.target.files?.[0] || undefined }) // update input state to selected file or undefined if no file selected
                                     }
                                 />
-                                {error && <span className="text-xs font-medium text-red-600">{error.image?.name}</span>} {/* if value of 'error' is not null ie any error occurs, only then render the value of 'image' present in 'error' object */}
+                                {error && <span className="text-xs font-medium text-red-600">{error.image?.name}</span>} // display validation error message for image field if any
                             </div>
                             <DialogFooter className="mt-5">
-                                {loading ? ( // render one of the two JSX below: first if 'loading' is true, otherwise second
+                                {loading ? ( // conditionally render loading or submit button based on loading state
                                     <Button disabled className="bg-orange hover:bg-hoverOrange">
-                                        <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                                        <Loader2 className="mr-2 w-4 h-4 animate-spin" /> {/* render loader icon when loading is true */}
                                         Please wait
                                     </Button>
                                 ) : (
-                                    <Button className="bg-orange hover:bg-hoverOrange">Submit</Button>
+                                    <Button className="bg-orange hover:bg-hoverOrange">Submit</Button> // render submit button when not loading
                                 )}
                             </DialogFooter>
                         </form>
                     </DialogContent>
                 </Dialog>
             </div>
-            {restaurant?.menus.map((menu: any, idx: number) => ( // iterate though 'menus' of 'restaurant' object as 'menu' of any data type and 'idx' number will be unique identifier
+            {restaurant?.menus.map((menu: any, idx: number) => ( // iterate through menus array of restaurant and render each menu item with unique key
                 <div key={idx} className="mt-6 space-y-4">
                     <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
                         <img
-                            src={menu.image} // render image present in current object
+                            src={menu.image} // display menu image for current item
                             alt=""
                             className="md:h-24 md:w-24 h-16 w-full object-cover rounded-lg"
                         />
                         <div className="flex-1">
-                            <h1 className="text-lg font-semibold text-gray-800">{menu.name}</h1> {/* render 'name' property ie name of current item */}
-                            <p className="text-sm tex-gray-600 mt-1">{menu.description}</p> {/* render 'description' property ie description of current item */}
-                            <h2 className="text-md font-semibold mt-2">Price: <span className="text-[#D19254]">80</span></h2>
+                            <h1 className="text-lg font-semibold text-gray-800">{menu.name}</h1> {/* display name of current menu item */}
+                            <p className="text-sm tex-gray-600 mt-1">{menu.description}</p> {/* display description of current menu item */}
+                            <h2 className="text-md font-semibold mt-2">Price: <span className="text-[#D19254]">80</span></h2> {/* display price of current menu item */}
                         </div>
                         <Button
-                            onClick={() => { // clicking this button does the following
-                                setSelectedMenu(menu); // set 'selectedMenu' to current object
-                                setEditOpen(true); // set 'editOpen' to true so that 'EditMenu' component renders to edit menu of current object
+                            onClick={() => { // define onClick handler to trigger editing mode for selected menu
+                                setSelectedMenu(menu); // set selectedMenu to current menu item
+                                setEditOpen(true); // set editOpen to true to open EditMenu component for current menu
                             }}
                             size={"sm"}
                             className="bg-orange hover:bg-hoverOrange mt-2"
@@ -171,13 +158,13 @@ const AddMenu = () => {
                     </div>
                 </div>
             ))}
-            <EditMenu // render 'EditMenu' component to edit menu of current object
-                selectedMenu={selectedMenu}
-                editOpen={editOpen}
-                setEditOpen={setEditOpen}
+            <EditMenu
+                selectedMenu={selectedMenu} // pass selected menu item to EditMenu component
+                editOpen={editOpen} // pass editOpen state to control EditMenu visibility
+                setEditOpen={setEditOpen} // pass setEditOpen to allow EditMenu to close itself
             />
         </div>
     );
 };
 
-export default AddMenu;
+export default AddMenu; // export AddMenu component as default export for use in other parts of the app
