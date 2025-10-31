@@ -1,26 +1,26 @@
-import { Link, useParams } from "react-router-dom"; // import 'Link' from react-router-dom to create link to other pages and 'useParams' to access and use parameters of URL
-import FilterPage from "./FilterPage"; // import 'FilterPage' component to display filter options
-import { Input } from "./ui/input"; // import 'Input' component from shadCN UI library
-import { useEffect, useState } from "react"; // import 'useEffect' hook to create side-effects and 'useState' hook to manage state
-import { Button } from "./ui/button"; // import 'Button' component from shadCN UI library
-import { Badge } from "./ui/badge"; // import 'Badge' component from shadCN UI library
-import { Globe, MapPin, X } from "lucide-react"; // import icons from lucide-react library
-import { Card, CardContent, CardFooter } from "./ui/card"; // import these card components from shadCN UI library
-import { AspectRatio } from "./ui/aspect-ratio"; // import 'AspectRatio' component from shadCN UI library
-import { Skeleton } from "./ui/skeleton"; // import 'Skeleton' component from shadCN UI library
-import { useRestaurantStore } from "@/store/useRestaurantStore"; // import 'useRestaurantStore' hook to access and update restaurant related state
-import { type Restaurant } from "@/types/restaurantType"; // import 'Restaurant' type
+import { Link, useParams } from "react-router-dom"; // import 'Link' to navigate between pages and 'useParams' to read dynamic URL parameters
+import FilterPage from "./FilterPage"; // import 'FilterPage' component to show filtering options for search results
+import { Input } from "./ui/input"; // import input component for capturing user search query
+import { useEffect, useState } from "react"; // import hooks for handling side effects and component state
+import { Button } from "./ui/button"; // import button component for user actions
+import { Badge } from "./ui/badge"; // import badge component for displaying applied filters
+import { Globe, MapPin, X } from "lucide-react"; // import icon components for UI representation
+import { Card, CardContent, CardFooter } from "./ui/card"; // import card layout components for restaurant display
+import { AspectRatio } from "./ui/aspect-ratio"; // import aspect ratio wrapper to maintain image proportions
+import { Skeleton } from "./ui/skeleton"; // import skeleton loader for showing placeholder while fetching data
+import { useRestaurantStore } from "@/store/useRestaurantStore"; // import restaurant store hook to manage restaurant search and filters
+import { type Restaurant } from "@/types/restaurantType"; // import type definition for restaurant data structure
 
-const SearchPage = () => { // create a functional component named 'SearchPage' that doesn't take any props
-    const params = useParams(); // create an instance of 'useParams' hook to access and use parameters of URL
+const SearchPage = () => { // define functional component 'SearchPage' to display and handle restaurant search functionality
+    const params = useParams(); // get URL parameters using 'useParams' hook for accessing search text in dynamic routes
     
-    const [searchQuery, setSearchQuery] = useState<string>(""); // create a state variable 'searchQuery' with empty string as initial value and a function 'setSearchQuery' to update its value
+    const [searchQuery, setSearchQuery] = useState<string>(""); // create state variable 'searchQuery' to store user-entered text for searching restaurants
     
-    const { loading, searchedRestaurant, searchRestaurant, setAppliedFilter, appliedFilter } = useRestaurantStore(); // extract these things from 'useRestaurantStore' hook
+    const { loading, searchedRestaurant, searchRestaurant, setAppliedFilter, appliedFilter } = useRestaurantStore(); // destructure restaurant store to access loading state, search results, search function, and applied filters
 
-    useEffect(() => { // create a side-effect using 'useEffect' hook
-        searchRestaurant(params.text!, searchQuery, appliedFilter); // call 'searchRestaurant' function from 'useRestaurantStore' hook to fetch restaurant data based on URL parameters, search query and filter options
-    }, [params.text!, appliedFilter]); // re-run this effect when URL parameters or filter options change
+    useEffect(() => { // trigger side-effect whenever parameters or filters change
+        searchRestaurant(params.text!, searchQuery, appliedFilter); // call store function to fetch restaurants based on URL text, search input, and filters
+    }, [params.text!, appliedFilter]); // depend on URL text and applied filters to re-run this effect
 
     return (
         <div className="max-w-7xl mx-auto my-10">
@@ -32,10 +32,10 @@ const SearchPage = () => { // create a functional component named 'SearchPage' t
                             type="text"
                             value={searchQuery}
                             placeholder="Search by restaurant & cuisines"
-                            onChange={(e) => setSearchQuery(e.target.value)} // any change in value of this input field will update 'searchQuery' state variable to new value entered using 'setSearchQuery' state function
+                            onChange={(e) => setSearchQuery(e.target.value)} // update 'searchQuery' whenever user types in input field
                         />
                         <Button
-                            onClick={() => searchRestaurant(params.text!, searchQuery, appliedFilter)} // clicking this button calls 'searchRestaurant' function
+                            onClick={() => searchRestaurant(params.text!, searchQuery, appliedFilter)} // trigger restaurant search manually when user clicks search button
                             className="bg-orange hover:bg-hoverOrange"
                         >
                             Search
@@ -47,7 +47,7 @@ const SearchPage = () => { // create a functional component named 'SearchPage' t
                                 ({searchedRestaurant?.data.length}) search result found
                             </h1>
                             <div className="flex flex-wrap gap-2 mb-4 md:mb-0">
-                                {appliedFilter.map( // iterate over 'appliedFilter' array as 'searchFilter' which is a string and 'idx' number as it's unique identifier
+                                {appliedFilter.map( // iterate through applied filters to render badges for each active filter
                                     (selectedFilter: string, idx: number) => (
                                         <div
                                             key={idx}
@@ -60,7 +60,7 @@ const SearchPage = () => { // create a functional component named 'SearchPage' t
                                                 {selectedFilter}
                                             </Badge>
                                             <X
-                                                onClick={() => setAppliedFilter(selectedFilter)} // clickin this icon calls 'setAppliedFilter' function for current element
+                                                onClick={() => setAppliedFilter(selectedFilter)} // remove filter badge by updating applied filter list
                                                 className="absolute text-[#D19254] right-1 hover:cursor-pointer"
                                             />
                                         </div>
@@ -69,12 +69,12 @@ const SearchPage = () => { // create a functional component named 'SearchPage' t
                             </div>
                         </div>
                         <div className="grid md:grid-cols-3 gap-4">
-                            {loading ? ( // if 'loading' is true, display 'SearchPageSkeleton' component
+                            {loading ? ( // if data is still loading, show placeholder skeleton UI
                                 <SearchPageSkeleton />
-                            ) : !loading && searchedRestaurant?.data.length === 0 ? ( // if 'loading' is false and 'data' array in 'searchedRestaurant' object is empty, display 'NoResultFound' component
+                            ) : !loading && searchedRestaurant?.data.length === 0 ? ( // if not loading and no results found, show empty state message
                                 <NoResultFound searchText={params.text!} />
                             ) : (
-                                searchedRestaurant?.data.map((restaurant: Restaurant) => ( // otherwise iterate over 'data' array having elements of type 'Restaurant' in 'SearchedRestaurant' object as 'restaurant'
+                                searchedRestaurant?.data.map((restaurant: Restaurant) => ( // render list of restaurants fetched from search results
                                     <Card
                                         key={restaurant._id}
                                         className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300"
@@ -114,7 +114,7 @@ const SearchPage = () => { // create a functional component named 'SearchPage' t
                                                 </p>
                                             </div>
                                             <div className="flex gap-2 mt-4 flex-wrap">
-                                                {restaurant.cuisines.map( // iterate over 'cuisines' array in current 'restaurant' object as 'cuisine' string with 'idx' number as it's unique identifier
+                                                {restaurant.cuisines.map( // map through cuisines of each restaurant to show them as badges
                                                     (cuisine: string, idx: number) => (
                                                         <Badge
                                                             key={idx}
@@ -127,7 +127,7 @@ const SearchPage = () => { // create a functional component named 'SearchPage' t
                                             </div>
                                         </CardContent>
                                         <CardFooter className="p-4 border-t dark:border-t-gray-700 border-t-gray-100 text-white flex justify-end">
-                                            <Link to={`/restaurant/${restaurant._id}`}>
+                                            <Link to={`/restaurant/${restaurant._id}`}> {/* navigate to individual restaurant page when clicked */}
                                                 <Button className="bg-orange hover:bg-hoverOrange font-semibold py-2 px-4 rounded-full shadow-md transition-colors duration-200">
                                                     View Menus
                                                 </Button>
@@ -146,10 +146,10 @@ const SearchPage = () => { // create a functional component named 'SearchPage' t
 
 export default SearchPage;
 
-const SearchPageSkeleton = () => {
+const SearchPageSkeleton = () => { // define component to show skeleton UI while data loads
     return (
         <>
-            {[...Array(3)].map((_, index) => ( // create 3 undefined elements, spread them in an array using spread operator and iterate over them as nothing with 'index' as unique identifier
+            {[...Array(3)].map((_, index) => ( // render three skeleton cards using array iteration for placeholder loading state
                 <Card
                     key={index}
                     className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden"
@@ -182,7 +182,7 @@ const SearchPageSkeleton = () => {
     );
 };
 
-const NoResultFound = ({ searchText }: { searchText: string }) => {
+const NoResultFound = ({ searchText }: { searchText: string }) => { // define component to show message when no search results are found
     return (
         <div className="text-center">
             <h1 className="text-2xl font-semibold text-gray-700 dark:text-gray-200">
@@ -191,7 +191,7 @@ const NoResultFound = ({ searchText }: { searchText: string }) => {
             <p className="mt-2 text-gray-500 dark:text-gray-400">
                 We couldn't find any results for "{searchText}". <br /> Try searching with a different term.
             </p>
-            <Link to="/">
+            <Link to="/"> {/* navigate user back to homepage if no results are available */}
                 <Button className="mt-4 bg-orange hover:bg-orangeHover">
                     Go Back to Home
                 </Button>
