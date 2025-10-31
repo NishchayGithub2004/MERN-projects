@@ -1,41 +1,44 @@
-import React, { useEffect } from "react"; // import 'useEffect' hook to implement side effects
-import { Button } from "./ui/button"; // import Button component from shadCN UI library
-import { useCreateCheckoutSessionMutation } from "@/features/api/purchaseApi"; // import RTK Query mutation hook to handle creating checkout session via API
-import { Loader2 } from "lucide-react"; // import 'Loader2' icon from react-lucide library
-import { toast } from "sonner"; // import 'toast' component from sonner library for toast messages
+import React, { useEffect } from "react"; // import React library and useEffect hook to handle component side effects
+import { Button } from "./ui/button"; // import Button component from local shadcn/ui library for UI interaction
+import { useCreateCheckoutSessionMutation } from "@/features/api/purchaseApi"; // import mutation hook from purchaseApi to initiate checkout session creation via API
+import { Loader2 } from "lucide-react"; // import Loader2 icon from lucide-react library for showing loading spinner
+import { toast } from "sonner"; // import toast utility from sonner library to display notification messages
 
-const BuyCourseButton = ({ courseId }) => { // define a functional component named 'BuyCourseButton' that takes 'courseId' as props
-    const [ createCheckoutSession, { data, isLoading, isSuccess, isError, error } ] = useCreateCheckoutSessionMutation(); // extract the following things from 'useCreateCheckoutSessionMutation' hook
+const BuyCourseButton = ({ courseId }) => { // define a functional component named 'BuyCourseButton' to let users purchase a course, taking 'courseId' as its prop
+    const [ // destructure returned values from RTK Query mutation hook to manage checkout session creation and its states
+        createCheckoutSession, // function to trigger API call for creating checkout session
+        { data, isLoading, isSuccess, isError, error } // response data and status flags to handle API result and UI state
+    ] = useCreateCheckoutSessionMutation(); // initialize the mutation hook
 
-    const purchaseCourseHandler = async () => { // create an async function naemd 'purchaseCourseHandler'
-        await createCheckoutSession(courseId); // call 'createCheckoutSession' function with 'courseId' as argument
+    const purchaseCourseHandler = async () => { // define async handler function to start purchase flow
+        await createCheckoutSession(courseId); // call mutation function with current course ID to initiate checkout session
     };
 
-    useEffect(() => { // use 'useEffect' hook to create a side effect
-        if (isSuccess) { // if 'isSuccess' is true
-            if (data?.url) window.location.href = data.url; // if 'url' property of 'data' object has non-null value, redirect user to URL that is value of 'url' property
-            else toast.error("Invalid response from server."); // if URL missing, show error toast message
+    useEffect(() => { // execute side effects whenever checkout status changes
+        if (isSuccess) { // check if checkout session was successfully created
+            if (data?.url) window.location.href = data.url; // redirect user to checkout URL if provided by server
+            else toast.error("Invalid response from server."); // display error toast if URL is missing in server response
         }
 
-        if (isError) toast.error(error?.data?.message || "Failed to create checkout session"); // if 'isError' is true, show a toast message that is in 'message' property of 'data' object of 'error' object, or a backup message if even that doesn't exist
-    }, [data, isSuccess, isError, error]); // dependency array to re-run effect when any of these variables change
+        if (isError) toast.error(error?.data?.message || "Failed to create checkout session"); // show toast with server error message or fallback if session creation fails
+    }, [data, isSuccess, isError, error]); // dependencies to rerun effect whenever any of these change
 
     return (
         <Button
-            disabled={isLoading} // this button is disabled ie unclickable when value of 'isLoading' is true
-            onClick={purchaseCourseHandler} // call 'purchaseCourseHandler' function when this button is cliked
+            disabled={isLoading} // disable button while API call is in progress to prevent multiple requests
+            onClick={purchaseCourseHandler} // call purchase handler when user clicks the button
             className="w-full"
         >
-            {isLoading ? ( // if 'isLoading' is true, then render loader with message 'Please Wait', otherwise render text 'Purchase Course', any one of it renders inside button
+            {isLoading ? ( // conditionally render loader or button label based on loading state
                 <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {/* render spinning loader icon when waiting for response */}
                     Please wait
                 </>
             ) : (
-                "Purchase Course"
+                "Purchase Course" // display purchase label when not loading
             )}
         </Button>
     );
 };
 
-export default BuyCourseButton;
+export default BuyCourseButton; // export BuyCourseButton component for use in other parts of the app
