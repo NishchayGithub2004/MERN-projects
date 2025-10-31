@@ -1,77 +1,79 @@
-import { type Dispatch, type FormEvent, type SetStateAction, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter } from "./ui/dialog";
-import { DialogTitle } from "@radix-ui/react-dialog";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { useUserStore } from "@/store/useUserStore";
-import { type CheckoutSessionRequest } from "@/types/orderType";
-import { useCartStore } from "@/store/useCartStore";
-import { useRestaurantStore } from "@/store/useRestaurantStore";
-import { useOrderStore } from "@/store/useOrderStore";
-import { Loader2 } from "lucide-react";
+import { type Dispatch, type FormEvent, type SetStateAction, useState } from "react"; // import types for dispatching state updates, handling form events, and using local state
+import { Dialog, DialogContent, DialogDescription, DialogFooter } from "./ui/dialog"; // import dialog components from shadCN UI to build a modal
+import { DialogTitle } from "@radix-ui/react-dialog"; // import dialog title component for modal heading
+import { Label } from "./ui/label"; // import label component from shadCN UI for form field labeling
+import { Input } from "./ui/input"; // import input component from shadCN UI for controlled input fields
+import { Button } from "./ui/button"; // import button component from shadCN UI for interactive actions
+import { useUserStore } from "@/store/useUserStore"; // import 'useUserStore' hook to access logged-in user's data
+import { type CheckoutSessionRequest } from "@/types/orderType"; // import type 'CheckoutSessionRequest' to structure checkout request payload
+import { useCartStore } from "@/store/useCartStore"; // import 'useCartStore' hook to access cart items
+import { useRestaurantStore } from "@/store/useRestaurantStore"; // import 'useRestaurantStore' hook to access restaurant data
+import { useOrderStore } from "@/store/useOrderStore"; // import 'useOrderStore' hook to handle order creation and checkout sessions
+import { Loader2 } from "lucide-react"; // import loader icon for showing loading state
 
-const CheckoutConfirmPage = ({
-    open,
-    setOpen,
-}: {
-    open: boolean;
-    setOpen: Dispatch<SetStateAction<boolean>>;
-}) => {
-    const { user } = useUserStore();
+const CheckoutConfirmPage = ( // define a functional component named 'CheckoutConfirmPage' to handle checkout confirmation
+    {
+        open, // boolean state indicating if dialog is open
+        setOpen, // state setter function to open/close the dialog
+    }: {
+        open: boolean;
+        setOpen: Dispatch<SetStateAction<boolean>>;
+    }
+) => {
+    const { user } = useUserStore(); // extract current logged-in user details from 'useUserStore'
     
-    const [input, setInput] = useState({
-        name: user?.fullname || "",
-        email: user?.email || "",
-        contact: user?.contact.toString() || "",
-        address: user?.address || "",
-        city: user?.city || "",
-        country: user?.country || "",
+    const [input, setInput] = useState({ // create a local state 'input' to store delivery details of the user
+        name: user?.fullname || "", // set default name from user's fullname if available
+        email: user?.email || "", // set default email from user's email if available
+        contact: user?.contact.toString() || "", // set default contact from user's contact converted to string
+        address: user?.address || "", // set default address from user's data
+        city: user?.city || "", // set default city from user's data
+        country: user?.country || "", // set default country from user's data
     });
     
-    const { cart } = useCartStore();
+    const { cart } = useCartStore(); // extract 'cart' array from 'useCartStore' to include items in checkout request
     
-    const { restaurant } = useRestaurantStore();
+    const { restaurant } = useRestaurantStore(); // extract 'restaurant' data from 'useRestaurantStore' to associate order with a restaurant
     
-    const { createCheckoutSession, loading } = useOrderStore();
+    const { createCheckoutSession, loading } = useOrderStore(); // extract 'createCheckoutSession' function and 'loading' state from 'useOrderStore'
     
-    const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setInput({ ...input, [name]: value });
+    const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => { // define event handler function to manage input changes dynamically
+        const { name, value } = e.target; // extract 'name' and 'value' from target input
+        setInput({ ...input, [name]: value }); // update respective field in 'input' object using computed property name
     };
     
-    const checkoutHandler = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
+    const checkoutHandler = async (e: FormEvent<HTMLFormElement>) => { // define asynchronous function 'checkoutHandler' to handle form submission
+        e.preventDefault(); // prevent default form submission behavior
+        
         try {
-            const checkoutData: CheckoutSessionRequest = {
-                cartItems: cart.map((cartItem) => ({
-                    menuId: cartItem._id,
-                    name: cartItem.name,
-                    image: cartItem.image,
-                    price: cartItem.price.toString(),
-                    quantity: cartItem.quantity.toString(),
+            const checkoutData: CheckoutSessionRequest = { // create structured object 'checkoutData' according to 'CheckoutSessionRequest' type
+                cartItems: cart.map((cartItem) => ({ // map over 'cart' array and transform each cart item into required format
+                    menuId: cartItem._id, // assign 'menuId' from item's unique id
+                    name: cartItem.name, // assign menu item name
+                    image: cartItem.image, // assign menu item image
+                    price: cartItem.price.toString(), // convert price to string for consistency
+                    quantity: cartItem.quantity.toString(), // convert quantity to string
                 })),
-                deliveryDetails: input,
-                restaurantId: restaurant?._id as string,
+                deliveryDetails: input, // assign current input state containing user delivery details
+                restaurantId: restaurant?._id as string, // assign restaurant id as string
             };
             
-            await createCheckoutSession(checkoutData);
-        } catch (error) {
-            console.log(error);
+            await createCheckoutSession(checkoutData); // call 'createCheckoutSession' to initiate checkout with server
+        } catch (error) { // if any error occurs during checkout
+            console.log(error); // log it to console for debugging
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent>
-                <DialogTitle className="font-semibold">Review Your Order</DialogTitle>
-                <DialogDescription className="text-xs">
+        <Dialog open={open} onOpenChange={setOpen}> {/* render a dialog component that opens/closes based on 'open' state */}
+            <DialogContent> {/* main container for dialog content */}
+                <DialogTitle className="font-semibold">Review Your Order</DialogTitle> {/* display heading for dialog */}
+                <DialogDescription className="text-xs"> {/* display short instructional text below heading */}
                     Double-check your delivery details and ensure everything is in order.
                     When you are ready, hit confirm button to finalize your order
                 </DialogDescription>
                 <form
-                    onSubmit={checkoutHandler}
+                    onSubmit={checkoutHandler} // attach 'checkoutHandler' to form submit event
                     className="md:grid grid-cols-2 gap-2 space-y-1 md:space-y-0"
                 >
                     <div>
@@ -80,17 +82,17 @@ const CheckoutConfirmPage = ({
                             type="text"
                             name="name"
                             value={input.name}
-                            onChange={changeEventHandler}
+                            onChange={changeEventHandler} // handle changes to 'name' input
                         />
                     </div>
                     <div>
                         <Label>Email</Label>
                         <Input
-                            disabled
+                            disabled // make email input read-only
                             type="email"
                             name="email"
                             value={input.email}
-                            onChange={changeEventHandler}
+                            onChange={changeEventHandler} // handle changes to 'email' input
                         />
                     </div>
                     <div>
@@ -99,7 +101,7 @@ const CheckoutConfirmPage = ({
                             type="text"
                             name="contact"
                             value={input.contact}
-                            onChange={changeEventHandler}
+                            onChange={changeEventHandler} // handle changes to 'contact' input
                         />
                     </div>
                     <div>
@@ -108,7 +110,7 @@ const CheckoutConfirmPage = ({
                             type="text"
                             name="address"
                             value={input.address}
-                            onChange={changeEventHandler}
+                            onChange={changeEventHandler} // handle changes to 'address' input
                         />
                     </div>
                     <div>
@@ -117,7 +119,7 @@ const CheckoutConfirmPage = ({
                             type="text"
                             name="city"
                             value={input.city}
-                            onChange={changeEventHandler}
+                            onChange={changeEventHandler} // handle changes to 'city' input
                         />
                     </div>
                     <div>
@@ -126,13 +128,13 @@ const CheckoutConfirmPage = ({
                             type="text"
                             name="country"
                             value={input.country}
-                            onChange={changeEventHandler}
+                            onChange={changeEventHandler} // handle changes to 'country' input
                         />
                     </div>
-                    <DialogFooter className="col-span-2 pt-5">
-                        {loading ? (
+                    <DialogFooter className="col-span-2 pt-5"> {/* footer section with buttons */}
+                        {loading ? ( // conditionally render loading state button
                             <Button disabled className="bg-orange hover:bg-hoverOrange">
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {/* show spinner animation while processing */}
                                 Please wait
                             </Button>
                         ) : (
@@ -147,4 +149,4 @@ const CheckoutConfirmPage = ({
     );
 };
 
-export default CheckoutConfirmPage;
+export default CheckoutConfirmPage; // export 'CheckoutConfirmPage' as default export for external use
