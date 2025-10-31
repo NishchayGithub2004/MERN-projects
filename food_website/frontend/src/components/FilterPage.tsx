@@ -1,45 +1,47 @@
-import { useRestaurantStore } from "@/store/useRestaurantStore"; // import 'useRestaurantStore' hook to manage restaurant state
-import { Button } from "./ui/button"; // import 'Button' component from shadCN UI library
-import { Checkbox } from "./ui/checkbox"; // import 'Checkbox' component from shadCN UI library
-import { Label } from "./ui/label"; // import 'Label' component from shadCN UI library
+import { useRestaurantStore } from "@/store/useRestaurantStore"; // import 'useRestaurantStore' hook to handle restaurant filtering logic and state
+import { Button } from "./ui/button"; // import 'Button' component for reset filter action
+import { Checkbox } from "./ui/checkbox"; // import 'Checkbox' component to display filter options as selectable items
+import { Label } from "./ui/label"; // import 'Label' component to provide text descriptions for each checkbox
 
-export type FilterOptionsState = { // create a custom data type 'FilterOptionsState' that contains properties 'id' and 'label' of type string
-    id: string;
-    label: string;
+export type FilterOptionsState = { // define a custom type 'FilterOptionsState' representing structure of each filter option
+    id: string; // unique identifier for each filter option
+    label: string; // display label for the filter option
 };
 
-const filterOptions: FilterOptionsState[] = [ // create an array of 'FilterOptionsState' type and initialize it with some values
+const filterOptions: FilterOptionsState[] = [ // define an array of filter options for available cuisines
     { id: "burger", label: "Burger" },
     { id: "thali", label: "Thali" },
     { id: "biryani", label: "Biryani" },
     { id: "momos", label: "Momos" },
 ];
 
-const FilterPage = () => {
-    const { setAppliedFilter, appliedFilter, resetAppliedFilter } = useRestaurantStore(); // extracct these things from the 'useRestaurantStore' hook
-    
-    const appliedFilterHandler = (value: string) => { // create a function 'appliedFilterHandler' that takes a string as argument to filter items based on the applied filter
-        setAppliedFilter(value); // call the 'setAppliedFilter' function from the 'useRestaurantStore' hook and pass the 'value' argument to it
+const FilterPage = () => { // define a functional component named 'FilterPage' to render cuisine-based filters
+    const { setAppliedFilter, appliedFilter, resetAppliedFilter } = useRestaurantStore(); // extract state and functions from 'useRestaurantStore' hook to manage applied filters
+
+    const appliedFilterHandler = (value: string) => { // define a function to update applied filters when a checkbox is clicked
+        setAppliedFilter(value); // call 'setAppliedFilter' with selected cuisine value to toggle it in global filter state
     };
     
     return (
         <div className="md:w-72">
             <div className="flex items-center justify-between">
-                <h1 className="font-medium text-lg">Filter by cuisines</h1>
-                <Button variant={"link"} onClick={resetAppliedFilter}>Reset</Button> {/* render a button clicking which calls 'resetAppliedFilter' function to remove filter */}
+                <h1 className="font-medium text-lg">Filter by cuisines</h1> {/* render heading for filter section */}
+                <Button variant={"link"} onClick={resetAppliedFilter}>Reset</Button> {/* clicking this resets all applied filters using 'resetAppliedFilter' */}
             </div>
-            {filterOptions.map((option) => ( // iterate over the 'filterOptions' array as 'option'
+            {filterOptions.map((option) => ( // iterate through each 'option' in 'filterOptions' to render individual checkbox with label
                 <div key={option.id} className="flex items-center space-x-2 my-5">
                     <Checkbox
-                        id={option.id} // set the 'id' prop of 'Checkbox' component to 'option.id'
-                        checked={appliedFilter.includes(option.label)} // this checkbox is checked if 'option.label' is included in the 'appliedFilter' array
-                        onClick={() => appliedFilterHandler(option.label)} // clicking this checkbox calls 'appliedFilterHandler' function and passes 'option.label' as argument
+                        id={option.id} // assign checkbox id to match corresponding filter option id
+                        checked={appliedFilter.includes(option.label)} // determine checked state based on whether current label exists in applied filters array
+                        onClick={() => appliedFilterHandler(option.label)} // on click, toggle the selected filter by invoking 'appliedFilterHandler'
                     />
-                    <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{option.label}</Label> {/* render label 'option.label' for current checkbox */}
+                    <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        {option.label} {/* render readable label text for current cuisine filter */}
+                    </Label>
                 </div>
             ))}
         </div>
     );
 };
 
-export default FilterPage;
+export default FilterPage; // export 'FilterPage' component as default for use in other components
