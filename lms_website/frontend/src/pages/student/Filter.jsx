@@ -1,11 +1,10 @@
-import { Checkbox } from "@/components/ui/checkbox"; // import 'Checkbox' component from shadCN UI library
-import { Label } from "@/components/ui/label"; // import Label component for checkbox labels
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"; // import Select components for price sorting dropdown
-import { Separator } from "@/components/ui/separator"; // import Separator component to divide sections
-import React, { useState } from "react"; // import React and useState hook
+import { Checkbox } from "@/components/ui/checkbox"; // import Checkbox component from shadcn/ui to let users select multiple categories
+import { Label } from "@/components/ui/label"; // import Label component for checkbox labeling
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"; // import select-related components for price sorting
+import { Separator } from "@/components/ui/separator"; // import Separator component to visually separate UI sections
+import React, { useState } from "react"; // import React and useState hook to manage component states
 
-// define an array of objects of properties 'id' and 'label'
-const categories = [
+const categories = [ // define array of category objects with id and label for filtering
     { id: "nextjs", label: "Next JS" },
     { id: "data science", label: "Data Science" },
     { id: "frontend development", label: "Frontend Development" },
@@ -19,55 +18,53 @@ const categories = [
     { id: "html", label: "HTML" },
 ];
 
-const Filter = ({ handleFilterChange }) => { // define a functional component named 'Filter' that takes 'handleFilterChange' as prop
-    const [selectedCategories, setSelectedCategories] = useState([]); // using 'useState' hook, create a state variable 'selectedCategories' initialized as an empty array and 'setSelectedCategories' function to modify the array
-    const [sortByPrice, setSortByPrice] = useState(""); // using 'useState' hook, create a state variable 'sortByPrice' initialized as an empty string and 'setSortByPrice' function to modify the state variable
+const Filter = ({ handleFilterChange }) => { // define functional component Filter to manage category and price filters
+    const [selectedCategories, setSelectedCategories] = useState([]); // initialize selectedCategories as empty array to track selected category ids
+    const [sortByPrice, setSortByPrice] = useState(""); // initialize sortByPrice as empty string to store sorting preference
 
-    const handleCategoryChange = (categoryId) => { // create a function named 'handleCategoryChange' that takes 'categoryId' as argument
-        setSelectedCategories((prevCategories) => { // create a function named 'setSelectedCategories' function inside it that takes 'prevCategories' as argument
-            const newCategories = prevCategories.includes(categoryId) // if 'prevCategories' include 'categoryId'
-                ? prevCategories.filter((id) => id !== categoryId) // filter out values in 'prevCategories' for whom, value of 'id' is not equal to 'categoryId'
-                : [...prevCategories, categoryId]; // otherwise, copy pre-existing values of 'prevCategories' using spread operator and add 'categoryId' to it
-
-            handleFilterChange(newCategories, sortByPrice); // call 'handleFilterChange' function for 'newCategories' and 'sortByPrice' to filter out as per new categories with selectee sorting option for prices
-            
-            return newCategories; // return new categories that are sorted by price as per choose method (increasing or decreasing)
+    const handleCategoryChange = (categoryId) => { // define handler to toggle category selection based on id
+        setSelectedCategories((prevCategories) => { // update category list based on previous selections
+            const newCategories = prevCategories.includes(categoryId) // check if category already selected
+                ? prevCategories.filter((id) => id !== categoryId) // remove category if it's already selected
+                : [...prevCategories, categoryId]; // otherwise, add category to selection list
+            handleFilterChange(newCategories, sortByPrice); // call parent handler to apply new category filters with current sorting
+            return newCategories; // return updated category list
         });
     };
 
-    const selectByPriceHandler = (selectedValue) => { // handle sorting by price
-        setSortByPrice(selectedValue); // update sort state
-        handleFilterChange(selectedCategories, selectedValue); // call parent handler with updated filters
-    }
+    const selectByPriceHandler = (selectedValue) => { // define handler for sorting option change
+        setSortByPrice(selectedValue); // update sortByPrice state with selected value
+        handleFilterChange(selectedCategories, selectedValue); // call parent handler to apply new sorting with current categories
+    };
 
     return (
-        <div className="w-full md:w-[20%]">
-            <div className="flex items-center justify-between">
-                <h1 className="font-semibold text-lg md:text-xl">Filter Options</h1>
-                <Select onValueChange={selectByPriceHandler}> {/* when a value is selected, 'selectByPriceHandler' function is called */}
-                    <SelectTrigger>
-                        <SelectValue placeholder="Sort by" />
+        <div className="w-full md:w-[20%]"> {/* container for filter panel with responsive width */}
+            <div className="flex items-center justify-between"> {/* header section for filter title and sorting dropdown */}
+                <h1 className="font-semibold text-lg md:text-xl">Filter Options</h1> {/* section heading */}
+                <Select onValueChange={selectByPriceHandler}> {/* select dropdown for sorting by price */}
+                    <SelectTrigger> {/* trigger button for dropdown */}
+                        <SelectValue placeholder="Sort by" /> {/* placeholder shown before selection */}
                     </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            <SelectLabel>Sort by price</SelectLabel>
-                            <SelectItem value="low">Low to High</SelectItem>
-                            <SelectItem value="high">High to Low</SelectItem>
+                    <SelectContent> {/* dropdown menu content */}
+                        <SelectGroup> {/* group of related items */}
+                            <SelectLabel>Sort by price</SelectLabel> {/* label describing dropdown purpose */}
+                            <SelectItem value="low">Low to High</SelectItem> {/* option to sort in ascending order */}
+                            <SelectItem value="high">High to Low</SelectItem> {/* option to sort in descending order */}
                         </SelectGroup>
                     </SelectContent>
                 </Select>
             </div>
-            <Separator className="my-4" />
-            <div>
-                <h1 className="font-semibold mb-2">CATEGORY</h1>
-                {categories.map((category) => (
-                    <div className="flex items-center space-x-2 my-2" key={category.id}>
+            <Separator className="my-4" /> {/* horizontal divider between sorting and category section */}
+            <div> {/* container for category checkboxes */}
+                <h1 className="font-semibold mb-2">CATEGORY</h1> {/* subheading for categories */}
+                {categories.map((category) => ( // iterate over categories to render each checkbox with label
+                    <div className="flex items-center space-x-2 my-2" key={category.id}> {/* wrapper for checkbox and label */}
                         <Checkbox
-                            id={category.id} 
-                            onCheckedChange={() => handleCategoryChange(category.id)} // when this checkbox is checked, 'handleCategoryChange' function is called with value of property 'id' of 'category' object as argument
+                            id={category.id} // assign unique id to each checkbox
+                            onCheckedChange={() => handleCategoryChange(category.id)} // toggle category selection on change
                         />
                         <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            {category.label}
+                            {category.label} {/* display category label */}
                         </Label>
                     </div>
                 ))}
@@ -76,4 +73,4 @@ const Filter = ({ handleFilterChange }) => { // define a functional component na
     );
 };
 
-export default Filter;
+export default Filter; // export Filter component for use in other parts of the application
