@@ -1,61 +1,55 @@
-import { Badge } from "@/components/ui/badge"; // import Badge component for showing course status
-import { Button } from "@/components/ui/button"; // import Button component for actions
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; // import Table-related components for tabular layout
-import { useGetCreatorCourseQuery } from "@/features/api/courseApi"; // import custom hook to fetch creator's courses from API
-import { Edit } from "lucide-react"; // import Edit icon from lucide-react
-import React from "react"; // import React to define component
-import { useNavigate } from "react-router-dom"; // import useNavigate for navigation between routes
+import { Badge } from "@/components/ui/badge"; // import Badge component to display course status visually (e.g., Published/Draft)
+import { Button } from "@/components/ui/button"; // import Button component to trigger navigation or actions
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; // import table UI components for structured tabular data display
+import { useGetCreatorCourseQuery } from "@/features/api/courseApi"; // import custom hook to fetch courses created by the current user
+import { Edit } from "lucide-react"; // import Edit icon to visually represent the edit action
+import React from "react"; // import React to define functional component
+import { useNavigate } from "react-router-dom"; // import useNavigate hook for programmatic route changes
 
-const CourseTable = () => { // define a function component CourseTable with no arguments
-    const { data, isLoading } = useGetCreatorCourseQuery(); // call useGetCreatorCourseQuery hook to fetch courses and extract data, isLoading
+const CourseTable = () => { // define functional component CourseTable to render list of creator's courses
+    const { data, isLoading } = useGetCreatorCourseQuery(); // call useGetCreatorCourseQuery hook to fetch creator’s courses and destructure response data and loading state
 
-    const navigate = useNavigate(); // call useNavigate to get navigation function for programmatic route changes
+    const navigate = useNavigate(); // call useNavigate to enable navigation between routes
 
-    if (isLoading) return <h1>Loading...</h1>; // check if courses are still loading and display loading text if true
+    if (isLoading) return <h1>Loading...</h1>; // conditionally render loading message while data is being fetched
 
     return (
         <div>
-            <Button onClick={() => navigate(`create`)}>Create a new course</Button> 
-            {/* navigate to course creation page when button is clicked */}
+            <Button onClick={() => navigate(`create`)}>Create a new course</Button> // call navigate function to go to course creation page on button click
 
-            <Table>
-                <TableCaption>A list of your recent courses.</TableCaption>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-[100px]">Price</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
+            <Table> 
+                <TableCaption>A list of your recent courses.</TableCaption> 
+                <TableHeader> 
+                    <TableRow> 
+                        <TableHead className="w-[100px]">Price</TableHead> 
+                        <TableHead>Status</TableHead> 
+                        <TableHead>Title</TableHead> 
+                        <TableHead className="text-right">Action</TableHead> 
+                    </TableRow> 
                 </TableHeader>
-                <TableBody>
-                    {data.courses.map((course) => ( // iterate over courses array and render each course in a table row
-                        <TableRow key={course._id}> {/* use course._id as unique key for React rendering */}
-                            <TableCell className="font-medium">{course?.coursePrice || "NA"}</TableCell> 
-                            {/* show course price or 'NA' if not available */}
-                            
+                <TableBody> 
+                    {data.courses.map((course) => ( // iterate through data.courses array to render each course as a table row
+                        <TableRow key={course._id}> // assign unique key as course._id for efficient React rendering
+                            <TableCell className="font-medium">{course?.coursePrice || "NA"}</TableCell> // display course price or "NA" if price is missing
                             <TableCell> 
-                                <Badge>{course.isPublished ? "Published" : "Draft"}</Badge> 
-                                {/* show badge with course status based on isPublished */}
+                                <Badge>{course.isPublished ? "Published" : "Draft"}</Badge> // show badge indicating published or draft status based on isPublished boolean
                             </TableCell>
-
-                            <TableCell>{course.courseTitle}</TableCell> {/* display course title */}
-                            
-                            <TableCell className="text-right">
+                            <TableCell>{course.courseTitle}</TableCell> // display course title from course data
+                            <TableCell className="text-right"> 
                                 <Button 
-                                    size='sm' 
-                                    variant='ghost' 
-                                    onClick={() => navigate(`${course._id}`)} // navigate to course detail/edit page using course._id
-                                >
-                                    <Edit /> {/* render edit icon inside button */}
-                                </Button>
+                                    size='sm' // set button size to small for compact layout
+                                    variant='ghost' // apply ghost variant for minimal button styling
+                                    onClick={() => navigate(`${course._id}`)} // navigate to individual course edit or detail page using course._id
+                                > 
+                                    <Edit /> // render Edit icon inside button for visual cue of edit action
+                                </Button> 
                             </TableCell>
                         </TableRow>
-                    ))}
+                    ))} 
                 </TableBody>
             </Table>
         </div>
     );
 };
 
-export default CourseTable;
+export default CourseTable; // export CourseTable component as default for use in other parts of the app
