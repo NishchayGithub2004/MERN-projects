@@ -1,87 +1,77 @@
-import { Loader2, LocateIcon, Mail, MapPin, MapPinnedIcon, Plus } from "lucide-react"; // import these icons from lucide-react library
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"; // import these Avatar components from shadCN UI library
-import { type FormEvent, useRef, useState } from "react"; // import 'FormEvent' type to handle form events, 'useRef' hook to create a reference to the input element, and 'useState' hook to manage states
-import { Input } from "./ui/input"; // import Input component from shadCN UI library
-import { Label } from "./ui/label"; // import Label component from shadCN UI library
-import { Button } from "./ui/button"; // import Button component from shadCN UI library
-import { useUserStore } from "@/store/useUserStore"; // import 'useUserStore' hook to access user-related state and actions
+import { Loader2, LocateIcon, Mail, MapPin, MapPinnedIcon, Plus } from "lucide-react"; // import multiple icon components used for UI representation of profile fields
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"; // import avatar components to display and manage user profile image
+import { type FormEvent, useRef, useState } from "react"; // import form event type, reference hook, and state hook from react for managing state and DOM references
+import { Input } from "./ui/input"; // import input component used for user input fields
+import { Label } from "./ui/label"; // import label component for field labels
+import { Button } from "./ui/button"; // import button component for form submission
+import { useUserStore } from "@/store/useUserStore"; // import user store hook to access and update user-related global state
 
-const Profile = () => { // create a functional component named 'Profile' that doesn't take any props
-    const { user, updateProfile } = useUserStore(); // extract 'user' and 'updateProfile' from 'useUserStore' hook
+const Profile = () => { // define a functional component named 'Profile' to manage user profile editing form
+    const { user, updateProfile } = useUserStore(); // destructure 'user' and 'updateProfile' function from global user store for accessing and updating user data
     
-    const [isLoading, setIsLoading] = useState<boolean>(false); // using 'useState' hook, create a boolean state variable 'isLoading' with initial value of false and a function 'setIsLoading' to update the value of variable
+    const [isLoading, setIsLoading] = useState<boolean>(false); // create state variable 'isLoading' with initial value false to indicate loading state during form submission
     
-    const [profileData, setProfileData] = useState({ // using 'useState' hook, create an object state variable 'profileData' and a function 'setProfileData' to update the object properties
-    // the initial values of object properties are values present in 'user' object or empty string if they don't have a value in 'user' object
-        fullname: user?.fullname || "",
-        email: user?.email || "",
-        address: user?.address || "",
-        city: user?.city || "",
-        country: user?.country || "",
-        profilePicture: user?.profilePicture || "",
+    const [profileData, setProfileData] = useState({ // create state variable 'profileData' to store editable user details
+        fullname: user?.fullname || "", // set initial value to user's fullname or empty string if not available
+        email: user?.email || "", // set initial value to user's email or empty string
+        address: user?.address || "", // set initial value to user's address or empty string
+        city: user?.city || "", // set initial value to user's city or empty string
+        country: user?.country || "", // set initial value to user's country or empty string
+        profilePicture: user?.profilePicture || "", // set initial value to user's profile picture or empty string
     });
     
-    const imageRef = useRef<HTMLInputElement | null>(null); // create an instance of 'useRef' hook to create a reference to form input element
-    // it's initial value is null since initially it doesn't refer to any input element
+    const imageRef = useRef<HTMLInputElement | null>(null); // create a reference to input element for programmatic click on hidden file input
     
-    const [selectedProfilePicture, setSelectedProfilePicture] = useState<string>(profileData.profilePicture || "");
-    // using 'useState' hook, create a state variable 'selectedProfilePicture' and function 'setSelectedProfilePicture' to update the value of this state variable
-    // the initial value of this state variable is the value of 'profilePicture' property of 'profileData' object or an empty string if it doesn't have a value in the object
+    const [selectedProfilePicture, setSelectedProfilePicture] = useState<string>(profileData.profilePicture || ""); // create state variable 'selectedProfilePicture' to store currently selected or uploaded profile image
 
-    const fileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => { // create a function named 'fileChangeHandler' that takes event object that responts to change in value of an input field
-        const file = e.target.files?.[0]; // get the first file from the list of files selected by the user (actually even a single file is present in array form, so [0] is necessary to extract even that one single file)
+    const fileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => { // define a function to handle file input changes for profile image upload
+        const file = e.target.files?.[0]; // extract the first selected file from input event
         
-        if (file) { // if a file is selected by the user
-            const reader = new FileReader(); // create an instance of 'FileReader' object to read the contents of the selected file
+        if (file) { // if a file is selected
+            const reader = new FileReader(); // create new file reader to convert file into base64 string
             
-            reader.onloadend = () => { // this a callback funcction that will be executed when the reading operation is completed
-                const result = reader.result as string; // read the contents of the selected file as string, which were read in base64 format
-                
-                setSelectedProfilePicture(result); // update the value of 'selectedProfilePicture' state variable with the contents of the selected file
-                
-                setProfileData((prevData) => ({ // take pre-existing data of 'profileData' state variable
-                    ...prevData, // copy the pre-existing data using spread operator
-                    profilePicture: result, // allot 'result' as the new value of 'profilePicture' property
-                }));
+            reader.onloadend = () => { // define callback executed after file reading completes
+                const result = reader.result as string; // store the read content of file as string
+                setSelectedProfilePicture(result); // update selectedProfilePicture state with new image data
+                setProfileData((prevData) => ({ ...prevData, profilePicture: result })); // update profileData object to include new profile picture
             };
             
-            reader.readAsDataURL(file); // read the contents of new profile picture in base64 format
+            reader.readAsDataURL(file); // initiate reading file as base64 string for image display
         }
     };
 
-    const changeHandler = (e: React.ChangeEvent<HTMLInputElement>) => { // create a function named 'changeHandler' that takes event object that responds to change in value of input field as argument
-        const { name, value } = e.target; // extract 'name' and 'value' properties of input field
-        setProfileData({ ...profileData, [name]: value }); // using spread operator, copy the pre-existing data of 'profileData' state variable and update the value of property with name same as 'name' variable with new value of 'value' variable
+    const changeHandler = (e: React.ChangeEvent<HTMLInputElement>) => { // define a function to handle changes in text input fields
+        const { name, value } = e.target; // extract name and value properties from input event
+        setProfileData({ ...profileData, [name]: value }); // update profileData object dynamically based on changed input field
     };
 
-    const updateProfileHandler = async (e: FormEvent<HTMLFormElement>) => { // create a function named 'updateProfileHandler' that takes event object that responds to form submission as argument
-        e.preventDefault(); // prevent the default behaviour of form submission which is to submit the form as soon as submit button is clicked, this is done to do some work before form is actually submitted
-        
+    const updateProfileHandler = async (e: FormEvent<HTMLFormElement>) => { // define async function to handle form submission for updating user profile
+        e.preventDefault(); // prevent default browser form submission to handle manually
         try {
-            setIsLoading(true); // set value of 'isLoading' state variable to true to indicate that the form is in the process of submitting
-            await updateProfile(profileData); // call 'updateProfile' function with 'profileData' object as argument to update the user's profile
-            setIsLoading(false); // set value of 'isLoading' state variable to false to indicate that the form has been submitted successfully
-        } catch (error) { // if any error occurs during form submission
-            setIsLoading(false); // set value of 'isLoading' state variable to false to indicate that the form submission has failed
+            setIsLoading(true); // enable loading state to indicate submission in progress
+            await updateProfile(profileData); // call updateProfile function from store to update user data with current profileData
+            setIsLoading(false); // disable loading state when profile update is complete
+        } catch (error) { 
+            setIsLoading(false); // disable loading state if an error occurs during update
         }
     };
 
     return (
-        <form onSubmit={updateProfileHandler} className="max-w-7xl mx-auto my-5"> {/* when the form is clicked, 'updateProfileHandler' function is executed */}
+        <form onSubmit={updateProfileHandler} className="max-w-7xl mx-auto my-5"> 
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Avatar className="relative md:w-28 md:h-28 w-20 h-20">
-                        <AvatarImage src={selectedProfilePicture} />
+                        <AvatarImage src={selectedProfilePicture} /> 
                         <AvatarFallback>CN</AvatarFallback>
                         <Input
                             ref={imageRef}
                             className="hidden"
                             type="file"
                             accept="image/*"
-                            onChange={fileChangeHandler} // when the value of this input field is changed, 'fileChangeHandler' function is executed
+                            onChange={fileChangeHandler} // handle file input changes with fileChangeHandler to update selected image
                         />
                         <div
-                            onClick={() => imageRef.current?.click()} // clicking this 'div' element will trigger the click event on the input element with ref 'imageRef'
+                            onClick={() => imageRef.current?.click()} // trigger hidden input click event when avatar overlay is clicked to open file chooser
                             className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-50 rounded-full cursor-pointer"
                         >
                             <Plus className="text-white w-8 h-8" />
@@ -91,7 +81,7 @@ const Profile = () => { // create a functional component named 'Profile' that do
                         type="text"
                         name="fullname"
                         value={profileData.fullname}
-                        onChange={changeHandler}
+                        onChange={changeHandler} // handle fullname input changes to update profileData
                         className="font-bold text-2xl outline-none border-none focus-visible:ring-transparent"
                     />
                 </div>
@@ -105,7 +95,7 @@ const Profile = () => { // create a functional component named 'Profile' that do
                             disabled
                             name="email"
                             value={profileData.email}
-                            onChange={changeHandler}
+                            onChange={changeHandler} // handle email change, though field is disabled for editing
                             className="w-full text-gray-600 bg-transparent focus-visible:ring-0 focus-visible:border-transparent outline-none border-none"
                         />
                     </div>
@@ -117,7 +107,7 @@ const Profile = () => { // create a functional component named 'Profile' that do
                         <Input
                             name="address"
                             value={profileData.address}
-                            onChange={changeHandler}
+                            onChange={changeHandler} // handle address input changes to update profileData
                             className="w-full text-gray-600 bg-transparent focus-visible:ring-0 focus-visible:border-transparent outline-none border-none"
                         />
                     </div>
@@ -129,7 +119,7 @@ const Profile = () => { // create a functional component named 'Profile' that do
                         <Input
                             name="city"
                             value={profileData.city}
-                            onChange={changeHandler}
+                            onChange={changeHandler} // handle city input changes to update profileData
                             className="w-full text-gray-600 bg-transparent focus-visible:ring-0 focus-visible:border-transparent outline-none border-none"
                         />
                     </div>
@@ -141,24 +131,24 @@ const Profile = () => { // create a functional component named 'Profile' that do
                         <Input
                             name="country"
                             value={profileData.country}
-                            onChange={changeHandler}
+                            onChange={changeHandler} // handle country input changes to update profileData
                             className="w-full text-gray-600 bg-transparent focus-visible:ring-0 focus-visible:border-transparent outline-none border-none"
                         />
                     </div>
                 </div>
             </div>
             <div className="text-center">
-                {isLoading ? ( // if value of 'isLoading' state variable is true, render first buton, else render second button
+                {isLoading ? ( 
                     <Button disabled className="bg-orange hover:bg-hoverOrange">
                         <Loader2 className="mr-2 w-4 h-4 animate-spin" />
                         Please wait
                     </Button>
                 ) : (
-                    <Button type="submit" className="bg-orange hover:bg-hoverOrange">Update</Button>
+                    <Button type="submit" className="bg-orange hover:bg-hoverOrange">Update</Button> // trigger updateProfileHandler on click to submit profile updates
                 )}
             </div>
         </form>
     );
 };
 
-export default Profile;
+export default Profile; // export the Profile component for use in other modules
