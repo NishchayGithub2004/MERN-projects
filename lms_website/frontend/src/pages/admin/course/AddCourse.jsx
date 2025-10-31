@@ -1,85 +1,76 @@
-import { Button } from "@/components/ui/button"; // import Button component from local UI library
-import { Input } from "@/components/ui/input"; // import Input component from local UI library
-import { Label } from "@/components/ui/label"; // import Label component from local UI library
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"; // import multiple Select-related components for dropdowns
-import { useCreateCourseMutation } from "@/features/api/courseApi"; // import custom hook for creating a course API mutation
-import { Loader2 } from "lucide-react"; // import Loader2 icon from lucide-react for loading spinner
-import React, { useEffect, useState } from "react"; // import React and hooks useEffect, useState
-import { useNavigate } from "react-router-dom"; // import useNavigate hook for programmatic navigation
-import { toast } from "sonner"; // import toast notification library
+import { Button } from "@/components/ui/button"; // import button component from local UI library for form actions
+import { Input } from "@/components/ui/input"; // import input component from local UI library for text input fields
+import { Label } from "@/components/ui/label"; // import label component for form field labels
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"; // import select components to create dropdown options
+import { useCreateCourseMutation } from "@/features/api/courseApi"; // import custom RTK query hook for triggering course creation API mutation
+import { Loader2 } from "lucide-react"; // import loader icon for showing loading animation on submit
+import React, { useEffect, useState } from "react"; // import React library and hooks useState, useEffect for state management and side effects
+import { useNavigate } from "react-router-dom"; // import useNavigate hook for programmatic route navigation
+import { toast } from "sonner"; // import toast notification library to show feedback messages
 
-const AddCourse = () => { // define a function AddCourse to handle course creation page UI and logic
-    const [courseTitle, setCourseTitle] = useState(""); // declare state courseTitle with initial value "" and updater setCourseTitle
-    const [category, setCategory] = useState(""); // declare state category with initial value "" and updater setCategory
+const AddCourse = () => { // define a functional component 'AddCourse' to handle new course creation logic and UI
+    const [courseTitle, setCourseTitle] = useState(""); // create state variable 'courseTitle' initialized as empty string to store input value
+    const [category, setCategory] = useState(""); // create state variable 'category' initialized as empty string to store selected dropdown value
 
-    const [ // destructure return from useCreateCourseMutation to handle course creation API
-        createCourse, // function to trigger the course creation mutation
-        { data, isLoading, error, isSuccess } // destructured object containing API response data, loading state, error, and success status
-    ] = useCreateCourseMutation();
+    const [ // destructure mutation hook to perform create course API operation
+        createCourse, // function to call API and create a new course
+        { data, isLoading, error, isSuccess } // object containing response data, loading status, error, and success status
+    ] = useCreateCourseMutation(); // call useCreateCourseMutation to enable API interaction for course creation
 
-    const navigate = useNavigate(); // call useNavigate to programmatically redirect user between routes
+    const navigate = useNavigate(); // get navigation function from useNavigate hook to redirect user after operations
 
-    const getSelectedCategory = (value) => { // define a function getSelectedCategory to update category state when user selects a category
-        setCategory(value); // call setCategory with value argument to set selected category
+    const getSelectedCategory = (value) => { // define function 'getSelectedCategory' to update category state when dropdown value changes
+        setCategory(value); // update 'category' state with selected dropdown value
     };
 
-    const createCourseHandler = async () => { // define a function createCourseHandler to handle course creation logic
-        await createCourse({ // call createCourse mutation function with object argument
-            courseTitle, // pass courseTitle state value as courseTitle key
-            category // pass category state value as category key
+    const createCourseHandler = async () => { // define async function 'createCourseHandler' to submit course creation form
+        await createCourse({ // call mutation function with payload containing course details
+            courseTitle, // send course title entered by user
+            category // send selected category for the course
         });
     };
 
-    useEffect(() => { // call useEffect to handle side effects after API response
-        if (isSuccess) { // check if course creation mutation is successful
-            toast.success( // call toast.success to show success notification
-                data?.message || "Course created." // pass custom message from API response or fallback string
-            );
-            navigate("/admin/course"); // call navigate to redirect to course list page after success
+    useEffect(() => { // use useEffect hook to perform side effects when API call completes
+        if (isSuccess) { // check if API call was successful
+            toast.success(data?.message || "Course created."); // display success message from API or fallback message
+            navigate("/admin/course"); // navigate to course listing page after successful creation
         }
-    }, [isSuccess, error]); // dependency array ensures effect runs when isSuccess or error changes
+    }, [isSuccess, error]); // run effect when success or error state changes
 
     return (
-        <div className="flex-1 mx-10">
-            <div className="mb-4">
-                <h1 className="font-bold text-xl">
+        <div className="flex-1 mx-10"> {/* define main container with responsive layout */}
+            <div className="mb-4"> {/* define section for form header */}
+                <h1 className="font-bold text-xl"> {/* render title text */}
                     Lets add course, add some basic course details for your new course
                 </h1>
-                <p className="text-sm">
-                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Possimus,
-                    laborum!
+                <p className="text-sm"> {/* render subtitle text */}
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Possimus, laborum!
                 </p>
             </div>
-            <div className="space-y-4">
-                <div>
-                    <Label>Title</Label>
+            <div className="space-y-4"> {/* define section for input fields with spacing */}
+                <div> {/* title input section */}
+                    <Label>Title</Label> {/* render label for input */}
                     <Input
-                        type="text" // input type set to text
-                        value={courseTitle} // bind value to courseTitle state
-                        onChange={(e) => setCourseTitle(e.target.value)} // call setCourseTitle with input value on change
-                        placeholder="Your Course Name" // input placeholder text
+                        type="text" // specify input type as text
+                        value={courseTitle} // bind input value to courseTitle state
+                        onChange={(e) => setCourseTitle(e.target.value)} // update courseTitle state when user types
+                        placeholder="Your Course Name" // placeholder text for input
                     />
                 </div>
-                <div>
-                    <Label>Category</Label>
-                    <Select onValueChange={getSelectedCategory}> {/* pass getSelectedCategory as callback to update category */}
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select a category" />
+                <div> {/* category select dropdown section */}
+                    <Label>Category</Label> {/* render label for dropdown */}
+                    <Select onValueChange={getSelectedCategory}> {/* attach event handler to update selected category */}
+                        <SelectTrigger className="w-[180px]"> {/* render dropdown trigger button */}
+                            <SelectValue placeholder="Select a category" /> {/* render placeholder text */}
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Category</SelectLabel>
-                                <SelectItem value="Next JS">Next JS</SelectItem>
+                        <SelectContent> {/* render dropdown content area */}
+                            <SelectGroup> {/* group dropdown options */}
+                                <SelectLabel>Category</SelectLabel> {/* label for dropdown group */}
+                                <SelectItem value="Next JS">Next JS</SelectItem> {/* render dropdown item for category */}
                                 <SelectItem value="Data Science">Data Science</SelectItem>
-                                <SelectItem value="Frontend Development">
-                                    Frontend Development
-                                </SelectItem>
-                                <SelectItem value="Fullstack Development">
-                                    Fullstack Development
-                                </SelectItem>
-                                <SelectItem value="MERN Stack Development">
-                                    MERN Stack Development
-                                </SelectItem>
+                                <SelectItem value="Frontend Development">Frontend Development</SelectItem>
+                                <SelectItem value="Fullstack Development">Fullstack Development</SelectItem>
+                                <SelectItem value="MERN Stack Development">MERN Stack Development</SelectItem>
                                 <SelectItem value="Javascript">Javascript</SelectItem>
                                 <SelectItem value="Python">Python</SelectItem>
                                 <SelectItem value="Docker">Docker</SelectItem>
@@ -89,24 +80,24 @@ const AddCourse = () => { // define a function AddCourse to handle course creati
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2"> {/* define button group layout */}
                     <Button
-                        variant="outline" // set button variant to outline
-                        onClick={() => navigate("/admin/course")} // call navigate to go back to course list on click
+                        variant="outline" // apply outlined button style
+                        onClick={() => navigate("/admin/course")} // navigate back to course list page on click
                     >
-                        Back
+                        Back {/* render button text */}
                     </Button>
                     <Button
-                        disabled={isLoading} // disable button if isLoading is true
-                        onClick={createCourseHandler} // call createCourseHandler function on click
+                        disabled={isLoading} // disable button while API call is loading
+                        onClick={createCourseHandler} // call handler function when user clicks button
                     >
-                        {isLoading ? ( // conditional rendering: show loader if loading, else show "Create"
+                        {isLoading ? ( // conditional rendering: show loading spinner if API is processing
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Please wait
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {/* render loader icon with spin animation */}
+                                Please wait {/* show waiting message */}
                             </>
                         ) : (
-                            "Create"
+                            "Create" // show "Create" text if not loading
                         )}
                     </Button>
                 </div>
@@ -115,4 +106,4 @@ const AddCourse = () => { // define a function AddCourse to handle course creati
     );
 };
 
-export default AddCourse;
+export default AddCourse; // export AddCourse component for route use
