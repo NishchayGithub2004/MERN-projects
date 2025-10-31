@@ -1,52 +1,51 @@
-import { Button } from "@/components/ui/button"; // import Button component for clickable actions
-import { Input } from "@/components/ui/input"; // import Input component for text fields
-import { Label } from "@/components/ui/label"; // import Label component for form labeling
-import { useCreateLectureMutation, useGetCourseLectureQuery } from "@/features/api/courseApi"; // import API hooks for creating and fetching lectures
-import { Loader2 } from "lucide-react"; // import Loader2 icon for loading indication
-import React, { useEffect, useState } from "react"; // import React and hooks for state and side effects
-import { useNavigate, useParams } from "react-router-dom"; // import hooks for navigation and route parameters
-import { toast } from "sonner"; // import toast for success/error notifications
-import Lecture from "./Lecture"; // import Lecture component for rendering individual lectures
+import { Button } from "@/components/ui/button"; // import Button component to trigger navigation or actions
+import { Input } from "@/components/ui/input"; // import Input component for user text input
+import { Label } from "@/components/ui/label"; // import Label component to display field labels
+import { useCreateLectureMutation, useGetCourseLectureQuery } from "@/features/api/courseApi"; // import API hooks to create and fetch lectures
+import { Loader2 } from "lucide-react"; // import Loader2 icon to indicate loading state
+import React, { useEffect, useState } from "react"; // import React and hooks for component state and lifecycle
+import { useNavigate, useParams } from "react-router-dom"; // import navigation and URL parameter hooks
+import { toast } from "sonner"; // import toast to display success/error notifications
+import Lecture from "./Lecture"; // import Lecture component to render individual lecture items
 
-const CreateLecture = () => { // define a function component CreateLecture with no arguments
-    const [lectureTitle, setLectureTitle] = useState(""); // create state variable lectureTitle with setter to store input lecture title
+const CreateLecture = () => { // define functional component CreateLecture to handle lecture creation and display
+    const [lectureTitle, setLectureTitle] = useState(""); // declare lectureTitle state to store user input for lecture title
 
-    const params = useParams(); // call useParams to access URL parameters
-    const courseId = params.courseId; // extract courseId from params for API requests
+    const params = useParams(); // call useParams hook to access route parameters
+    const courseId = params.courseId; // extract courseId parameter from URL for API use
 
-    const navigate = useNavigate(); // call useNavigate to get navigation function
+    const navigate = useNavigate(); // call useNavigate to programmatically redirect user
 
-    const [
-        createLecture, // mutation trigger function for creating lecture
-        { data, isLoading, isSuccess, error } // destructure mutation state values from hook
-    ] = useCreateLectureMutation(); // call custom mutation hook for creating lectures
+    const [ // destructure return from useCreateLectureMutation hook to handle lecture creation API
+        createLecture, // function to trigger lecture creation mutation
+        { data, isLoading, isSuccess, error } // destructure mutation states: API response, loading, success, and error
+    ] = useCreateLectureMutation();
 
-    const {
-        data: lectureData, // rename response data as lectureData
-        isLoading: lectureLoading, // rename isLoading to lectureLoading for clarity
-        isError: lectureError, // rename isError to lectureError for clarity
-        refetch, // function to refetch lecture data after creation
-    } = useGetCourseLectureQuery(courseId); // call query hook with courseId to fetch lectures of a specific course
+    const { // call useGetCourseLectureQuery to fetch all lectures for given courseId
+        data: lectureData, // store API response data as lectureData
+        isLoading: lectureLoading, // store loading state as lectureLoading
+        isError: lectureError, // store error flag as lectureError
+        refetch, // function to refetch lecture data when needed
+    } = useGetCourseLectureQuery(courseId);
 
-    const createLectureHandler = async () => { // define a function createLectureHandler to trigger lecture creation
-        await createLecture({ // call createLecture mutation function
-            lectureTitle, // pass lectureTitle from state
-            courseId // pass courseId from URL params
+    const createLectureHandler = async () => { // define function to handle new lecture creation
+        await createLecture({ // trigger createLecture mutation
+            lectureTitle, // send lectureTitle from state as payload
+            courseId // send courseId from params to link lecture with its course
         });
     };
 
-    useEffect(() => { // define a side effect to handle lecture creation response
-        if (isSuccess) { // check if creation was successful
-            refetch(); // refetch updated lecture list
-            toast.success(data.message); // show success message using returned data
+    useEffect(() => { // define side effect to handle lecture creation results
+        if (isSuccess) { // check if lecture creation was successful
+            refetch(); // refetch updated lecture list after successful creation
+            toast.success(data.message); // display success message via toast
         }
-        
-        if (error) { // check if error occurred
-            toast.error(error.data.message); // show error message from error object
+        if (error) { // check if any error occurred during creation
+            toast.error(error.data.message); // display error message via toast
         }
-    }, [isSuccess, error]); // run effect when success or error changes
+    }, [isSuccess, error]); // run effect when success or error state changes
 
-    console.log(lectureData); // log lectureData for debugging purposes
+    console.log(lectureData); // log lectureData object for debugging purpose
 
     return (
         <div className="flex-1 mx-10">
@@ -63,24 +62,24 @@ const CreateLecture = () => { // define a function component CreateLecture with 
                 <div>
                     <Label>Title</Label>
                     <Input
-                        type="text"
+                        type="text" // set input type as text for title input
                         value={lectureTitle} // bind input value to lectureTitle state
-                        onChange={(e) => setLectureTitle(e.target.value)} // update state on input change using event target value
-                        placeholder="Your Title Name"
+                        onChange={(e) => setLectureTitle(e.target.value)} // update lectureTitle when user types
+                        placeholder="Your Title Name" // placeholder text for input
                     />
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
-                        variant="outline" // style button with outline variant
-                        onClick={() => navigate(`/admin/course/${courseId}`)} // navigate back to course page using courseId
+                        variant="outline" // set button variant as outline for secondary style
+                        onClick={() => navigate(`/admin/course/${courseId}`)} // navigate back to course detail page
                     >
                         Back to course
                     </Button>
                     <Button 
-                        disabled={isLoading} // disable button while lecture is being created
-                        onClick={createLectureHandler} // call createLectureHandler when button clicked
+                        disabled={isLoading} // disable button when API call is in progress
+                        onClick={createLectureHandler} // call createLectureHandler when clicked
                     >
-                        {isLoading ? ( // conditionally render button content based on loading state
+                        {isLoading ? ( // conditionally render spinner if loading
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
                                 Please wait
@@ -91,19 +90,19 @@ const CreateLecture = () => { // define a function component CreateLecture with 
                     </Button>
                 </div>
                 <div className="mt-10">
-                    {lectureLoading ? ( // show loading text while lectures are being fetched
+                    {lectureLoading ? ( // show loading message while fetching lectures
                         <p>Loading lectures...</p>
-                    ) : lectureError ? ( // show error message if lecture fetch failed
+                    ) : lectureError ? ( // show error if lecture fetch fails
                         <p>Failed to load lectures.</p>
                     ) : lectureData.lectures.length === 0 ? ( // check if no lectures exist
-                        <p>No lectures availabe</p>
-                    ) : ( // otherwise, map over lectures and render Lecture components
-                        lectureData.lectures.map((lecture, index) => (
+                        <p>No lectures available</p>
+                    ) : ( // render lectures when data exists
+                        lectureData.lectures.map((lecture, index) => ( // iterate through lectures array
                             <Lecture
-                                key={lecture._id} // unique key for React rendering
+                                key={lecture._id} // assign unique key from lecture._id
                                 lecture={lecture} // pass lecture data as prop
-                                courseId={courseId} // pass courseId as prop
-                                index={index} // pass index for ordering
+                                courseId={courseId} // pass courseId for related actions
+                                index={index} // pass index for numbering or ordering
                             />
                         ))
                     )}
@@ -113,4 +112,4 @@ const CreateLecture = () => { // define a function component CreateLecture with 
     );
 };
 
-export default CreateLecture;
+export default CreateLecture; // export CreateLecture component for use in routing or parent component
