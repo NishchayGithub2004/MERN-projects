@@ -1,13 +1,12 @@
-import { Button } from "@/components/ui/button"; // import Button component from shadCN UI library
-import { Input } from "@/components/ui/input"; // import Input component from shadCN UI library
-import { Loader2, Mail } from "lucide-react"; // import Mail and Loader2 icons from lucide-react library
-import { useState } from "react"; // import useState hook to manage states
-import { Link } from "react-router-dom"; // import Link component from react-router-dom library to create links
+import { Button } from "@/components/ui/button"; // import Button component from shadCN UI library to create styled button elements
+import { Input } from "@/components/ui/input"; // import Input component from shadCN UI library to render styled input fields
+import { Loader2, Mail } from "lucide-react"; // import Loader2 icon for showing loading animation and Mail icon for email input UI decoration
+import { useState } from "react"; // import useState hook to manage and update component state
+import { Link } from "react-router-dom"; // import Link component from react-router-dom library to navigate between routes
 
-const ForgotPassword = () => { // create a functional component named 'ForgotPassword' that doesn't take any props
-    const [email, setEmail] = useState<string>(""); // initialize a state variable 'email' with an empty string and a function 'setEmail' to update it's value
-
-    const loading = false; // initialize a variable 'loading' with a value of 'false'
+const ForgotPassword = () => { // define a functional component named 'ForgotPassword' to allow users to reset their password
+    const [email, setEmail] = useState<string>(""); // create a state variable 'email' initialized with an empty string and a function 'setEmail' to update it
+    const loading = false; // define a constant 'loading' initialized with false to represent loading state of the form
 
     return (
         <div className="flex items-center justify-center min-h-screen w-full">
@@ -20,26 +19,29 @@ const ForgotPassword = () => { // create a functional component named 'ForgotPas
                     <Input
                         type="text"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)} // when value of this input field changes, update the state variable 'email' with the new value using 'setEmail' function
+                        onChange={(e) => setEmail(e.target.value)} // update 'email' state variable when user types in the input field
                         placeholder="Enter your email"
                         className="pl-10"
                     />
-                    <Mail className="absolute inset-y-2 left-2 text-gray-600 pointer-events-none" />
+                    <Mail className="absolute inset-y-2 left-2 text-gray-600 pointer-events-none" /> {/* render mail icon inside the input field for visual indication */}
                 </div>
-                {
-                    loading ? ( // render first button if value of 'loading' is true, otherwise render the second one
-                        <Button disabled className="bg-orange hover:bg-hoverOrange"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait</Button>
-                    ) : (
-                        <Button className="bg-orange hover:bg-hoverOrange">Send Reset Link</Button>
-                    )
-                }
+                {loading ? ( // check if 'loading' is true to decide what to render
+                    <Button disabled className="bg-orange hover:bg-hoverOrange"> {/* render a disabled button with loader when form is submitting */}
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {/* render loader icon to indicate ongoing process */}
+                        Please wait
+                    </Button>
+                ) : (
+                    <Button className="bg-orange hover:bg-hoverOrange"> {/* render active button when not loading */}
+                        Send Reset Link {/* button text prompting user action to send password reset link */}
+                    </Button>
+                )}
                 <span className="text-center">
-                    Back to{" "}
-                    <Link to="/login" className="text-blue-500">Login</Link>
+                    Back to{" "} {/* display navigation text for login page redirection */}
+                    <Link to="/login" className="text-blue-500">Login</Link> {/* render link to navigate user back to login page */}
                 </span>
             </form>
         </div>
     );
 };
 
-export default ForgotPassword;
+export default ForgotPassword; // export ForgotPassword component as default so it can be imported and used elsewhere

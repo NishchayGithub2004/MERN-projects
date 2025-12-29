@@ -1,18 +1,18 @@
-import { useRestaurantStore } from "@/store/useRestaurantStore"; // import 'useRestaurantStore' hook to manage restaurant related states
-import AvailableMenu from "./AvailableMenu"; // import 'AvailableMenu' component to show available menus of the restaurant
-import { Badge } from "./ui/badge"; // import 'Badge' component from shadCN UI library
-import { Timer } from "lucide-react"; // import 'Timer' icon from lucide-react library
-import { useEffect } from "react"; // import 'useEffect' hook to run side effects
-import { useParams } from "react-router-dom"; // import 'useParams' hook to get parameters from the URL
+import { useRestaurantStore } from "@/store/useRestaurantStore"; // import custom store hook to access and manage restaurant-related global state
+import AvailableMenu from "./AvailableMenu"; // import component that displays a list of available menu items for the restaurant
+import { Badge } from "./ui/badge"; // import badge component used to display cuisine tags
+import { Timer } from "lucide-react"; // import timer icon for showing estimated delivery time
+import { useEffect } from "react"; // import useEffect hook to handle side effects on component mount or dependency changes
+import { useParams } from "react-router-dom"; // import hook to extract URL parameters dynamically
 
-const RestaurantDetail = () => {
-    const params = useParams(); // create an instance of 'useParams' hook to get parameters from the URL
+const RestaurantDetail = () => { // define a functional component named 'RestaurantDetail' to display detailed restaurant information
+    const params = useParams(); // create object containing route parameters from current URL
     
-    const { singleRestaurant, getSingleRestaurant } = useRestaurantStore(); // extraact these two things from the 'useRestaurantStore' hook
+    const { singleRestaurant, getSingleRestaurant } = useRestaurantStore(); // destructure restaurant data and fetch function from restaurant store for state management
 
-    useEffect(() => { // define a side effect using 'useEffect' hook
-        getSingleRestaurant(params.id!); // call 'getSingleRestaurant' function to get the details of the restaurant with 'params.id' as argument to get information of restaurant of 'id' in current URL
-    }, [params.id]); // write 'params.id' in dependency array to run side effect whenever 'params.id' changes
+    useEffect(() => { // define side effect to fetch restaurant details whenever id parameter changes
+        getSingleRestaurant(params.id!); // call getSingleRestaurant function with id parameter to load specific restaurant details
+    }, [params.id]); // re-run effect when params.id changes to fetch updated restaurant data
 
     return (
         <div className="max-w-6xl mx-auto my-10">
@@ -28,8 +28,8 @@ const RestaurantDetail = () => {
                     <div className="my-5">
                         <h1 className="font-medium text-xl">{singleRestaurant?.restaurantName || "Loading..."}</h1>
                         <div className="flex gap-2 my-2">
-                            {singleRestaurant?.cuisines.map((cuisine: string, idx: number) => ( // iterave over 'cuisines' array of 'singleRestaurant' object as 'cuisine' string and 'idx' number
-                                <Badge key={idx}>{cuisine}</Badge> // render 'Badge' component for each cuisine and write 'cuisine' as it's content
+                            {singleRestaurant?.cuisines.map((cuisine: string, idx: number) => ( // iterate over cuisines array to render cuisine badges for each cuisine type
+                                <Badge key={idx}>{cuisine}</Badge> // render badge component for each cuisine to visually categorize restaurant type
                             ))}
                         </div>
                         <div className="flex md:flex-row flex-col gap-2 my-5">
@@ -42,10 +42,10 @@ const RestaurantDetail = () => {
                         </div>
                     </div>
                 </div>
-                {singleRestaurant?.menus && <AvailableMenu menus={singleRestaurant?.menus!} />} {/* if 'menus' object is not null, then render 'AvailableMenu' component */}
+                {singleRestaurant?.menus && <AvailableMenu menus={singleRestaurant?.menus!} />} // render AvailableMenu component only if restaurant menus exist
             </div>
         </div>
     );
 };
 
-export default RestaurantDetail;
+export default RestaurantDetail; // export RestaurantDetail component to make it available for routing or reuse

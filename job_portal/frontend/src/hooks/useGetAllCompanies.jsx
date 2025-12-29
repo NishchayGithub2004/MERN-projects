@@ -1,34 +1,29 @@
-import { setCompanies } from '@/redux/companySlice' // import the setCompanies action creator from companySlice to update Redux state with fetched company data
-import { COMPANY_API_END_POINT } from '@/utils/constant' // import COMPANY_API_END_POINT constant that holds the base API URL for company-related requests
-import axios from 'axios' // import axios library to perform HTTP requests to the backend
-import { useEffect } from 'react' // import useEffect hook from React to execute side effects after component mounting
-import { useDispatch } from 'react-redux' // import useDispatch hook from react-redux to dispatch actions to the Redux store
+import { setCompanies } from '@/redux/companySlice'; // import setCompanies action creator from companySlice to update redux store with fetched company list
+import { COMPANY_API_END_POINT } from '@/utils/constant'; // import COMPANY_API_END_POINT constant containing base url for company-related api requests
+import axios from 'axios'; // import axios to perform http requests for retrieving company data from backend
+import { useEffect } from 'react'; // import useEffect hook to run side effects such as data fetching after component mount
+import { useDispatch } from 'react-redux'; // import useDispatch hook to obtain dispatch function for sending actions to redux store
 
-const useGetAllCompanies = () => { // define a custom hook named useGetAllCompanies to fetch all companies and store them in Redux
-    const dispatch = useDispatch(); // initialize the dispatch function for sending actions to the Redux store
+const useGetAllCompanies = () => { // define custom hook useGetAllCompanies to fetch company data and store it in redux state
+    const dispatch = useDispatch(); // initialize dispatch to enable dispatching actions that modify redux state
 
-    useEffect(() => { // call useEffect to perform the fetch operation after the component mounts
-        const fetchCompanies = async () => { // define an asynchronous function fetchCompanies to request all company data from the backend
-            try { // start a try block to handle potential request errors
-                const res = await axios.get( // make an HTTP GET request using axios to fetch company data from the API
-                    `${COMPANY_API_END_POINT}/get`, // construct the API endpoint URL by appending '/get' to COMPANY_API_END_POINT
-                    { withCredentials: true } // include credentials like cookies in the request to support authentication
+    useEffect(() => { // run effect once after component mounts to trigger company data fetching
+        const fetchCompanies = async () => { // define asynchronous function fetchCompanies to handle company data retrieval
+            try { // use try block to safely handle request and potential errors
+                const res = await axios.get( // make http get request to backend to fetch all companies
+                    `${COMPANY_API_END_POINT}/get`, // form complete api endpoint by appending '/get' to base company api endpoint
+                    { withCredentials: true } // include authentication credentials such as cookies for secure request
                 );
-
-                console.log('called'); // log 'called' to the console to confirm that the function was executed
-
-                if (res.data.success) { // check if the response indicates success through the success property
-                    dispatch( // dispatch an action to update Redux state with the fetched companies
-                        setCompanies(res.data.companies) // call setCompanies with res.data.companies to store all companies in the Redux store
-                    );
+                console.log('called'); // log message to confirm api call was executed
+                if (res.data.success) { // verify response indicates successful data retrieval
+                    dispatch(setCompanies(res.data.companies)); // dispatch setCompanies action with fetched data to update redux store
                 }
-            } catch (error) { // catch and handle any errors that occur during the request
-                console.log(error); // log the error object to the console for debugging
+            } catch (error) { // handle any network or response errors
+                console.log(error); // log error details to console for debugging purposes
             }
-        }
+        };
+        fetchCompanies(); // immediately call fetchCompanies to start fetching company data after component mounts
+    }, []); // pass empty dependency array so effect executes only once during component lifecycle
+};
 
-        fetchCompanies(); // invoke the fetchCompanies function immediately after the component mounts to fetch data
-    }, []); // provide an empty dependency array so this effect runs only once after mounting
-}
-
-export default useGetAllCompanies; // export the custom hook as the default export to be reused across components for company data fetching
+export default useGetAllCompanies; // export custom hook as default to reuse it for fetching company data in multiple components

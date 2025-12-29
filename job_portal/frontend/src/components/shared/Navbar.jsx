@@ -1,43 +1,40 @@
-import React from 'react' // import React to enable JSX syntax and React component creation
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover' // import Popover-related components for dropdown UI
-import { Button } from '../ui/button' // import Button component for styled button elements
-import { Avatar, AvatarImage } from '../ui/avatar' // import Avatar components for displaying user profile pictures
-import { LogOut, User2 } from 'lucide-react' // import icon components for logout and user actions
-import { Link, useNavigate } from 'react-router-dom' // import Link for navigation links and useNavigate hook for programmatic navigation
-import { useDispatch, useSelector } from 'react-redux' // import Redux hooks to access state and dispatch actions
-import axios from 'axios' // import axios to make HTTP requests
-import { USER_API_END_POINT } from '@/utils/constant' // import constant API endpoint for user-related routes
-import { setUser } from '@/redux/authSlice' // import Redux action to update user state
-import { toast } from 'sonner' // import toast for showing notifications to users
+import React from 'react' // import react library to enable JSX and component creation
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover' // import popover components to manage dropdown interactions
+import { Button } from '../ui/button' // import button component to use consistent styled buttons
+import { Avatar, AvatarImage } from '../ui/avatar' // import avatar components to display user profile images
+import { LogOut, User2 } from 'lucide-react' // import icons to represent logout and user actions visually
+import { Link, useNavigate } from 'react-router-dom' // import link for navigation and useNavigate hook for redirection logic
+import { useDispatch, useSelector } from 'react-redux' // import useSelector to read data from redux store state and useDispatch to send actions that update the store
+import axios from 'axios' // import axios to perform http requests
+import { USER_API_END_POINT } from '@/utils/constant' // import constant defining base url for user-related api endpoints
+import { setUser } from '@/redux/authSlice' // import redux action creator to update user state
+import { toast } from 'sonner' // import toast utility to display user notifications
 
-const Navbar = () => { // define a function component Navbar to render the navigation bar
-    const { user } = useSelector( // destructure user object from Redux store using useSelector hook
-        store => store.auth // access auth slice from the Redux store to retrieve authentication state
+const Navbar = () => { // define functional component 'Navbar' to render the main navigation bar
+    const { user } = useSelector( // extract user object from redux store using useSelector hook
+        store => store.auth // access auth slice to retrieve authentication-related state
     )
-    const dispatch = useDispatch() // initialize dispatch function to send actions to Redux store
-    const navigate = useNavigate() // initialize navigate function to redirect users programmatically
+    const dispatch = useDispatch() // create dispatch function to send actions to redux store
+    const navigate = useNavigate() // create navigate function to programmatically redirect users
 
-    const logoutHandler = async () => { // define an asynchronous function logoutHandler to handle user logout logic
-        try { // start try block to handle possible request errors
-            const res = await axios.get( // make an asynchronous GET request using axios to log the user out
-                `${USER_API_END_POINT}/logout`, // construct logout URL using constant endpoint
-                { withCredentials: true } // send cookies along with request to maintain authentication context
+    const logoutHandler = async () => { // define asynchronous function to handle logout process
+        try { // use try block to execute logout request safely
+            const res = await axios.get( // send a get request to backend logout endpoint
+                `${USER_API_END_POINT}/logout`, // construct complete logout url using constant base path
+                { withCredentials: true } // include cookies in request for session-based authentication
             )
-            
-            if (res.data.success) { // check if logout request was successful using response data
-                dispatch( // dispatch Redux action to update authentication state
-                    setUser(null) // set user to null to clear user info from state
-                )
-                navigate("/") // navigate to homepage after successful logout
-                toast.success(res.data.message) // show success toast notification using response message
+            if (res.data.success) { // check response to confirm successful logout
+                dispatch(setUser(null)) // update redux state to remove stored user data
+                navigate("/") // redirect user to homepage after logout
+                toast.success(res.data.message) // show success notification with message from server
             }
-        } catch (error) { // handle any errors during logout process
-            console.log(error) // log the error to console for debugging
-            toast.error(error.response.data.message) // show error toast with message from server response
+        } catch (error) { // catch failed logout attempt if any
+            console.log(error) // output error to console for debugging
+            toast.error(error.response.data.message) // show error message notification to user
         }
     }
 
-    return ( // return JSX structure for Navbar UI
+    return ( // return jsx for rendering navbar structure
         <div className='bg-white'>
             <div className='flex items-center justify-between mx-auto max-w-7xl h-16'>
                 <div>
@@ -46,12 +43,12 @@ const Navbar = () => { // define a function component Navbar to render the navig
                 <div className='flex items-center gap-12'>
                     <ul className='flex font-medium items-center gap-5'>
                         {
-                            user && user.role === 'recruiter' ? ( // check if user exists and has recruiter role to show recruiter options
+                            user && user.role === 'recruiter' ? ( // check if logged-in user is recruiter to show recruiter-specific links
                                 <>
                                     <li><Link to="/admin/companies">Companies</Link></li>
                                     <li><Link to="/admin/jobs">Jobs</Link></li>
                                 </>
-                            ) : ( // otherwise show general navigation links for other users
+                            ) : ( // if not recruiter, show general navigation links
                                 <>
                                     <li><Link to="/">Home</Link></li>
                                     <li><Link to="/jobs">Jobs</Link></li>
@@ -61,42 +58,42 @@ const Navbar = () => { // define a function component Navbar to render the navig
                         }
                     </ul>
                     {
-                        !user ? ( // check if no user is logged in to show login/signup buttons
+                        !user ? ( // check if no user is logged in to show authentication buttons
                             <div className='flex items-center gap-2'>
                                 <Link to="/login"><Button variant="outline">Login</Button></Link>
                                 <Link to="/signup"><Button className="bg-[#6A38C2] hover:bg-[#5b30a6]">Signup</Button></Link>
                             </div>
-                        ) : ( // if user exists, show user profile popover
+                        ) : ( // if user exists, display profile and logout popover
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Avatar className="cursor-pointer">
-                                        <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" />
+                                        <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" /> {/* dynamically render user profile photo if available */}
                                     </Avatar>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-80">
-                                    <div className=''>
+                                    <div>
                                         <div className='flex gap-2 space-y-2'>
                                             <Avatar className="cursor-pointer">
-                                                <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" />
+                                                <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" /> {/* show same profile image inside popover for identity consistency */}
                                             </Avatar>
                                             <div>
-                                                <h4 className='font-medium'>{user?.fullname}</h4>
-                                                <p className='text-sm text-muted-foreground'>{user?.profile?.bio}</p>
+                                                <h4 className='font-medium'>{user?.fullname}</h4> {/* display user's full name fetched from state */}
+                                                <p className='text-sm text-muted-foreground'>{user?.profile?.bio}</p> {/* display user's short bio for context */}
                                             </div>
                                         </div>
                                         <div className='flex flex-col my-2 text-gray-600'>
                                             {
-                                                user && user.role === 'student' && ( // check if user is a student to show profile view option
+                                                user && user.role === 'student' && ( // conditionally render profile link for student users
                                                     <div className='flex w-fit items-center gap-2 cursor-pointer'>
-                                                        <User2 />
-                                                        <Button variant="link"> <Link to="/profile">View Profile</Link></Button>
+                                                        <User2 /> // display user icon to represent profile
+                                                        <Button variant="link"> <Link to="/profile">View Profile</Link></Button> {/* link button to open user's profile page */}
                                                     </div>
                                                 )
                                             }
                                             <div className='flex w-fit items-center gap-2 cursor-pointer'>
-                                                <LogOut />
-                                                <Button 
-                                                    onClick={logoutHandler} // attach logoutHandler function to button click event to log user out
+                                                <LogOut /> {/* display logout icon beside button for better visual cue */}
+                                                <Button
+                                                    onClick={logoutHandler} // attach logoutHandler to perform logout on click
                                                     variant="link"
                                                 >
                                                     Logout
@@ -114,4 +111,4 @@ const Navbar = () => { // define a function component Navbar to render the navig
     )
 }
 
-export default Navbar
+export default Navbar // export navbar component as default so it can be imported elsewhere

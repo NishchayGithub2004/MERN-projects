@@ -1,21 +1,20 @@
-import { IndianRupee } from "lucide-react"; // import the IndianRupee icon from lucide-react library
-import { Separator } from "./ui/separator"; // import the Separator component from shadCN UI library
-import { Link } from "react-router-dom"; // import the Link component from react-router-dom library to create links to redirect user to
-import { Button } from "./ui/button"; // import the Button component from shadCN UI library
-import { useOrderStore } from "@/store/useOrderStore"; // import the useOrderStore hook to handle order related states
-import { useEffect } from "react"; // import the useEffect hook to run side effects
-import { type CartItem } from "@/types/cartType"; // import the 'CartItem' type
+import { IndianRupee } from "lucide-react"; // import icon to visually represent Indian currency symbol
+import { Separator } from "./ui/separator"; // import visual separator component for dividing sections cleanly
+import { Link } from "react-router-dom"; // import navigation component to create clickable links for routing
+import { Button } from "./ui/button"; // import button component from shadcn UI library for styled interactive buttons
+import { useOrderStore } from "@/store/useOrderStore"; // import global order store hook to manage and access order data
+import { useEffect } from "react"; // import hook to handle lifecycle side effects like data fetching
+import { type CartItem } from "@/types/cartType"; // import custom data type definition for cart items
 
-const Success = () => {
-    const { orders, getOrderDetails } = useOrderStore(); // extract 'orders' and 'gerOrderDetails' from 'useOrderStore' hook
+const Success = () => { // define functional component 'Success' to display order confirmation page
+    const { orders, getOrderDetails } = useOrderStore(); // destructure orders array and function to fetch order details from global store
 
-    useEffect(() => { // run a side effect using 'useEffect' hook
-        getOrderDetails(); // call 'getOrderDetails' function to get the details of the order
-    }, []); // dependency array is empty, so side effect will run only once when component mounts
+    useEffect(() => { // define a side effect to load order details when component mounts
+        getOrderDetails(); // invoke store function to fetch and update latest order information
+    }, []); // run this effect only once after initial render since dependency array is empty
 
-    // if orders array is empty, return a message that order was not found
-    if (orders.length === 0)
-        return (
+    if (orders.length === 0) // check if there are no orders to display
+        return ( // if true, render a fallback message for missing order
             <div className="flex items-center justify-center min-h-screen">
                 <h1 className="font-bold text-2xl text-gray-700 dark:text-gray-300">
                     Order not found!
@@ -34,34 +33,34 @@ const Success = () => {
                 </div>
                 <div className="mb-6">
                     <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Order Summary</h2>
-                    {orders.map((order: any, index: number) => ( // iterate over 'orders' object as 'order' of type 'any' and 'index' number as unique identifier
+                    {orders.map((order: any, index: number) => ( // iterate through list of orders to render summary for each
                         <div key={index}>
-                            {order.cartItems.map((item: CartItem) => ( // iterate over 'cartItems' array present in 'order' object as 'item' of custom type 'CartItem'
-                                <div className="mb-4">
+                            {order.cartItems.map((item: CartItem) => ( // iterate through cart items in each order to render item details
+                                <div className="mb-4" key={item._id}>
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center">
                                             <img
-                                                src={item.image} // render 'image' property of current 'item' object as image
+                                                src={item.image} // display product image from item data
                                                 alt=""
                                                 className="w-14 h-14 rounded-md object-cover"
                                             />
-                                            <h3 className="ml-4 text-gray-800 dark:text-gray-200 font-medium">{item.name}</h3> {/* render 'item.name' as name of current 'item' object */}
+                                            <h3 className="ml-4 text-gray-800 dark:text-gray-200 font-medium">{item.name}</h3> // render product name beside image
                                         </div>
                                         <div className="text-right">
                                             <div className="text-gray-800 dark:text-gray-200 flex items-center">
-                                                <IndianRupee />
-                                                <span className="text-lg font-medium">{item.price}</span> {/* render 'item.price' as price of current 'item' object */}
+                                                <IndianRupee /> // show currency symbol before price
+                                                <span className="text-lg font-medium">{item.price}</span> // display item price in numeric form
                                             </div>
                                         </div>
                                     </div>
-                                    <Separator className="my-4" />
+                                    <Separator className="my-4" /> // render horizontal divider between items
                                 </div>
                             ))}
                         </div>
                     ))}
                 </div>
-                <Link to="/cart">
-                    <Button className="bg-orange hover:bg-hoverOrange w-full py-3 rounded-md shadow-lg">
+                <Link to="/cart"> // create navigation link to cart page
+                    <Button className="bg-orange hover:bg-hoverOrange w-full py-3 rounded-md shadow-lg"> // styled button prompting user to continue shopping
                         Continue Shopping
                     </Button>
                 </Link>
@@ -70,4 +69,4 @@ const Success = () => {
     );
 };
 
-export default Success;
+export default Success; // export Success component for use in routing or other components

@@ -1,23 +1,19 @@
-import React, { useState } from 'react' // import React to define a component and useState hook to manage state in the component
-import { Button } from './ui/button' // import Button component for clickable button UI
-import { Search } from 'lucide-react' // import Search icon component from lucide-react icon library
-import { useDispatch } from 'react-redux' // import useDispatch hook to send actions to Redux store
-import { setSearchedQuery } from '@/redux/jobSlice' // import setSearchedQuery action to update the searched job query in Redux store
-import { useNavigate } from 'react-router-dom' // import useNavigate hook to programmatically navigate to a different route
+import React, { useState } from 'react' // import React for JSX support and useState hook for managing local component state
+import { Button } from './ui/button' // import Button component for interactive search action
+import { Search } from 'lucide-react' // import Search icon from lucide-react library for button visualization
+import { useDispatch } from 'react-redux' // import useDispatch hook to trigger Redux actions
+import { setSearchedQuery } from '@/redux/jobSlice' // import Redux action to update searched job query in global state
+import { useNavigate } from 'react-router-dom' // import useNavigate hook to navigate programmatically between routes
 
-const HeroSection = () => { // define a functional component named HeroSection
-    const [query, setQuery] = useState("") // define a state variable 'query' initialized with an empty string to store the search text input by user
-    
-    const dispatch = useDispatch() // create a dispatch function instance to dispatch Redux actions
-    const navigate = useNavigate() // create a navigate function instance to perform route navigation programmatically
+const HeroSection = () => { // define a functional component named 'HeroSection' to provide job search input and navigation functionality
+    const [query, setQuery] = useState("") // initialize local state variable 'query' to store user-entered search text
 
-    const searchJobHandler = () => { // define a function named searchJobHandler to handle search button click
-        dispatch( // call dispatch function to send an action to Redux store
-            setSearchedQuery(query) // call setSearchedQuery action creator with argument 'query' to update Redux jobSlice with the current search query
-        )
-        navigate( // call navigate function to redirect user to a new route
-            "/browse" // specify '/browse' as the route path to navigate to after search
-        )
+    const dispatch = useDispatch() // create a Redux dispatch instance to send actions to the store
+    const navigate = useNavigate() // create a navigate instance to perform client-side navigation
+
+    const searchJobHandler = () => { // define a function 'searchJobHandler' to execute search logic on button click
+        dispatch(setSearchedQuery(query)) // dispatch Redux action to set searched job query with current input value
+        navigate("/browse") // navigate to '/browse' page to display search results
     }
 
     return (
@@ -29,14 +25,14 @@ const HeroSection = () => { // define a functional component named HeroSection
                     <Input
                         type="text"
                         placeholder='Find your dream jobs'
-                        onChange={(e) => setQuery(e.target.value)} // call setQuery with argument e.target.value to update query state with current input value
+                        onChange={(e) => setQuery(e.target.value)} // update query state in real time as user types into the input field
                         className='outline-none border-none w-full'
                     />
                     <Button 
-                        onClick={searchJobHandler} // assign searchJobHandler function to be triggered when button is clicked
+                        onClick={searchJobHandler} // trigger searchJobHandler when user clicks the search button
                         className="rounded-r-full bg-[#6A38C2]"
                     >
-                        <Search className='h-5 w-5' /> 
+                        <Search className='h-5 w-5' /> {/* render search icon inside the button for visual indication */}
                     </Button>
                 </div>
             </div>
@@ -44,4 +40,4 @@ const HeroSection = () => { // define a functional component named HeroSection
     )
 }
 
-export default HeroSection
+export default HeroSection // export HeroSection component for reuse in other parts of the app

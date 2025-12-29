@@ -1,51 +1,53 @@
-import React from 'react'; // import React to define a functional component
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel'; // import Carousel components for slider functionality
-import { Button } from './ui/button'; // import Button component for clickable category buttons
-import { useDispatch } from 'react-redux'; // import useDispatch hook to send actions to Redux store
-import { useNavigate } from 'react-router-dom'; // import useNavigate hook to programmatically navigate between routes
-import { setSearchedQuery } from '@/redux/jobSlice'; // import action creator to update searched job query in Redux state
+import React from 'react' // import React to enable JSX and define functional components
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel' // import Carousel components to create a category slider
+import { Button } from './ui/button' // import Button component for interactive category selection
+import { useDispatch } from 'react-redux' // import useDispatch hook to dispatch Redux actions
+import { useNavigate } from 'react-router-dom' // import useNavigate hook to navigate between routes programmatically
+import { setSearchedQuery } from '@/redux/jobSlice' // import Redux action to update searched query state
 
-const category = [ // define an array of job category names to be displayed in the carousel
+const category = [ // define an array named 'category' that holds job category labels displayed in the carousel
     "Frontend Developer",
     "Backend Developer",
     "Data Science",
     "Graphic Designer",
     "FullStack Developer"
-];
+]
 
-const CategoryCarousel = () => { // define a functional component CategoryCarousel to render job categories
-    const dispatch = useDispatch(); // create a dispatch function to dispatch Redux actions
-    
-    const navigate = useNavigate(); // create a navigate function to redirect users programmatically
-    
-    const searchJobHandler = (query) => { // define a function searchJobHandler that takes a category name as query argument
-        dispatch(setSearchedQuery(query)); // dispatch Redux action to set searched job query to the selected category
-        navigate("/browse"); // navigate user to the browse page to view filtered jobs
-    };
+const CategoryCarousel = () => { // define a functional component named 'CategoryCarousel' to render job categories and handle job searches
+    const dispatch = useDispatch() // initialize Redux dispatch function to send actions to store
+
+    const navigate = useNavigate() // initialize navigate function to programmatically redirect user to another route
+
+    const searchJobHandler = ( // define a function 'searchJobHandler' to handle job category selection and navigation
+        query // parameter 'query' represents selected job category text
+    ) => { 
+        dispatch(setSearchedQuery(query)) // update Redux state with selected category as searched query
+        navigate("/browse") // redirect user to browse page to show filtered job listings
+    }
 
     return (
         <div>
             <Carousel className="w-full max-w-xl mx-auto my-20">
                 <CarouselContent>
                     {
-                        category.map((cat, index) => ( // iterate over category array to generate a carousel item for each category
-                            <CarouselItem className="md:basis-1/2 lg-basis-1/3" key={index}> 
+                        category.map((cat, index) => ( // iterate through 'category' array to create carousel items dynamically
+                            <CarouselItem className="md:basis-1/2 lg-basis-1/3" key={index}>
                                 <Button 
-                                    onClick={() => searchJobHandler(cat)} // attach click handler to trigger searchJobHandler with selected category
-                                    variant="outline" 
+                                    onClick={() => searchJobHandler(cat)} // call searchJobHandler with selected category when button is clicked
+                                    variant="outline"
                                     className="rounded-full"
                                 >
-                                    {cat}
+                                    {cat} {/* render the category name text dynamically inside the button */}
                                 </Button>
                             </CarouselItem>
                         ))
                     }
                 </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
+                <CarouselPrevious /> 
+                <CarouselNext /> 
             </Carousel>
         </div>
     )
-};
+}
 
-export default CategoryCarousel; // export CategoryCarousel component for use in other parts of the app
+export default CategoryCarousel // export CategoryCarousel component so it can be reused in other parts of the app
