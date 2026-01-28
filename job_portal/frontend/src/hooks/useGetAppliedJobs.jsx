@@ -1,29 +1,28 @@
-import { setAllAppliedJobs } from "@/redux/jobSlice"; // import setAllAppliedJobs action creator from jobSlice to update redux state with list of applied jobs
-import { APPLICATION_API_END_POINT } from "@/utils/constant"; // import APPLICATION_API_END_POINT constant containing base url for application-related api requests
-import axios from "axios"; // import axios to perform http requests for fetching applied job data
-import { useEffect } from "react"; // import useEffect hook to perform side effects like api calls after component mount
-import { useDispatch } from "react-redux"; // import useDispatch to send actions to redux store
+import { setAllAppliedJobs } from "@/redux/jobSlice"; // import 'setAllAppliedJobs' function to update state of applied jobs in the redux store
+import { APPLICATION_API_END_POINT } from "@/utils/constant"; // import URL of application related backend API endpoint to access it
+import axios from "axios"; // import 'axios' library to make HTTP requests to the backend
+import { useEffect } from "react"; // import 'useEffect' hook to perform side effects in functional components
+import { useDispatch } from "react-redux"; // import 'useDispatch' hook to dispatch actions to redux store
 
-const useGetAppliedJobs = () => { // define custom hook useGetAppliedJobs to fetch all jobs user has applied for and update redux store
-    const dispatch = useDispatch(); // initialize dispatch function to enable sending actions to redux store
+const useGetAppliedJobs = () => { // create a custom hook to fetch all jobs user has applied to from the backend
+    const dispatch = useDispatch(); // create an instance of 'useDispatch' hook to use it to dispatch actions to the redux store
 
-    useEffect(() => { // execute effect after component mount to start fetching applied jobs
-        const fetchAppliedJobs = async () => { // define asynchronous function fetchAppliedJobs to request applied job data from backend
-            try { // use try block to safely handle api request and possible errors
-                const res = await axios.get( // make http get request using axios to fetch applied jobs
-                    `${APPLICATION_API_END_POINT}/get`, // construct endpoint by appending '/get' to application api base url
-                    { withCredentials: true } // include credentials for authentication when making the request
+    useEffect(() => { // run this effect only once (when the component it is being used in mounts) by keeping dependency array empty
+        const fetchAppliedJobs = async () => { // create a function to fetch all applied jobs
+            try {
+                const res = await axios.get( // make a GET request using 'axios' library
+                    `${APPLICATION_API_END_POINT}/get`, // this is the URL to make GET request to
+                    { withCredentials: true } // send cookies to the backend
                 );
-                console.log(res.data); // log api response data to console for debugging and verification
-                if (res.data.success) { // check if api response indicates successful data retrieval
-                    dispatch(setAllAppliedJobs(res.data.application)); // dispatch setAllAppliedJobs action with fetched data to update redux store
+                if (res.data.success) { // if data is fetched from backend successfully
+                    dispatch(setAllAppliedJobs(res.data.application)); // dispatch fetched data and set applied jobs state in the redux store to it
                 }
-            } catch (error) { // catch any errors that occur during api request
-                console.log(error); // log error details to console for debugging
+            } catch (error) { // if any error occurs while fetching applied jobs from backend
+                console.log(error); // log the error to the console to know what error occured
             }
         };
-        fetchAppliedJobs(); // immediately call fetchAppliedJobs after mount to initiate data fetching
-    }, []); // pass empty dependency array so effect runs only once during component lifecycle
+        fetchAppliedJobs(); // call the function to fetch the jobs user has applied to
+    }, []); // run this effect only once (when the component it is being used in mounts) by keeping dependency array empty
 };
 
-export default useGetAppliedJobs; // export custom hook as default so it can be reused to fetch applied jobs in different components
+export default useGetAppliedJobs; // export the hook to be used in other parts of the application

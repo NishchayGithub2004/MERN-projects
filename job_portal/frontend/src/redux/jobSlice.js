@@ -1,44 +1,42 @@
-import { createSlice } from "@reduxjs/toolkit"; // import createSlice from redux toolkit to simplify creation of a redux slice that handles job-related state and actions
+import { createSlice } from "@reduxjs/toolkit"; // from 'reduxjs' library, import 'createSlice' function to create a redux slice
 
-const jobSlice = createSlice({ // create a redux slice named jobSlice to manage job data, admin jobs, applied jobs, and search functionality
-    name: "job", // set the name of this slice as 'job' to represent the job-related section of the redux store
-    initialState: { // define the default structure and initial values for the job state
-        allJobs: [], // initialize allJobs as an empty array to store all available job listings once fetched
-        allAdminJobs: [], // initialize allAdminJobs as an empty array to hold job postings managed by the admin user
-        singleJob: null, // initialize singleJob as null to indicate that no specific job details are currently loaded
-        searchJobByText: "", // initialize searchJobByText as an empty string to capture user input for job search filtering
-        allAppliedJobs: [], // initialize allAppliedJobs as an empty array to track all jobs that the user has applied for
-        searchedQuery: "", // initialize searchedQuery as an empty string to store the latest job search keyword entered by the user
+const jobSlice = createSlice({ // create a redux slice named 'jobSlice' to handle job related states
+    name: "job", // unique name of this slice is 'job'
+    initialState: { // this part contains the following properties related to jobs with their initial values
+        allJobs: [], // array called 'allJobs' to store all jobs data with initial value of empty array
+        allAdminJobs: [], // array called 'allAdminJobs' to store all admin jobs data with initial value of empty array
+        singleJob: null, // object called 'singleJob' to store single job data that comes by searching for one with initial value of null
+        searchJobByText: "", // string called 'searchJobByText' to store name of job that comes up by searching it in search bar
+        allAppliedJobs: [], // array called 'allAppliedJobs' to store all applied jobs data with initial value of empty array
+        searchedQuery: "", // string called 'searchedQuery' to store search string written in search bar to search for a job
     },
-    reducers: { // define reducer functions to describe how job state properties should change in response to dispatched actions
-        setAllJobs: (state, action) => { // define reducer setAllJobs which replaces allJobs with the data received in action payload
-            state.allJobs = action.payload; // assign action.payload to allJobs to update the list of all job postings
+    reducers: { /* this is the container of all functions to change the value of states related to job data
+        create functions to update values of states defined in 'initialState' part, they take two arguments: 'state' which is the 
+        state to update and 'action' which contains the new value to update the state with in it's payload
+        update the state the functions are supposed to update with the value contained by the 'payload' property of 'action' */
+        
+        setAllJobs: (state, action) => {
+            state.allJobs = action.payload;
         },
-        setSingleJob: (state, action) => { // define reducer setSingleJob which updates singleJob with a specific job object from the payload
-            state.singleJob = action.payload; // assign action.payload to singleJob to store currently selected job details
+        setSingleJob: (state, action) => {
+            state.singleJob = action.payload;
         },
-        setAllAdminJobs: (state, action) => { // define reducer setAllAdminJobs which updates the admin job postings in the state
-            state.allAdminJobs = action.payload; // assign action.payload to allAdminJobs to store jobs managed by the admin
+        setAllAdminJobs: (state, action) => {
+            state.allAdminJobs = action.payload;
         },
-        setSearchJobByText: (state, action) => { // define reducer setSearchJobByText which updates the text used for live job search filtering
-            state.searchJobByText = action.payload; // assign action.payload to searchJobByText to reflect current search bar input
+        setSearchJobByText: (state, action) => {
+            state.searchJobByText = action.payload;
         },
-        setAllAppliedJobs: (state, action) => { // define reducer setAllAppliedJobs which updates the applied jobs array in the state
-            state.allAppliedJobs = action.payload; // assign action.payload to allAppliedJobs to maintain the list of jobs user has applied for
+        setAllAppliedJobs: (state, action) => {
+            state.allAppliedJobs = action.payload;
         },
-        setSearchedQuery: (state, action) => { // define reducer setSearchedQuery which records the most recent job search keyword
-            state.searchedQuery = action.payload; // assign action.payload to searchedQuery to store the latest search phrase entered by user
+        setSearchedQuery: (state, action) => {
+            state.searchedQuery = action.payload;
         }
     }
 });
 
-export const { // destructure and export action creators to allow dispatching specific job-related updates from ui components
-    setAllJobs,
-    setSingleJob,
-    setAllAdminJobs,
-    setSearchJobByText,
-    setAllAppliedJobs,
-    setSearchedQuery
-} = jobSlice.actions;
+// export the functions defined in reducers to update values of state variables related to job data
+export const { setAllJobs, setSingleJob, setAllAdminJobs, setSearchJobByText, setAllAppliedJobs, setSearchedQuery } = jobSlice.actions;
 
-export default jobSlice.reducer; // export reducer function as default to integrate jobSlice into the central redux store
+export default jobSlice.reducer; // export the reducer to be used in redux store

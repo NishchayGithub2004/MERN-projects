@@ -1,16 +1,21 @@
-import { createSlice } from "@reduxjs/toolkit"; // import createSlice from redux toolkit to simplify creation of a redux slice which bundles reducers and actions together
+import { createSlice } from "@reduxjs/toolkit"; // from 'reduxjs' library, import 'createSlice' function to create a redux slice
 
-const applicationSlice = createSlice({ // create a redux slice named applicationSlice to handle application-related state and actions
-    name: 'application', // set the unique name of this slice as 'application' to identify its section in the redux store
-    initialState: { // define the initial structure and values for this slice of state
-        applicants: null, // initialize applicants as null to indicate no applicant data is loaded initially
+const applicationSlice = createSlice({ // create a redux slice named 'applicationSlice' to handle application related states
+    name: 'application', // unique name of this slice is 'application'
+    initialState: { // this part contains the following properties related to applications with their initial values
+        applicants: null, // object called 'applicants' to store job applicants data with initial value of null
     },
-    reducers: { // define a collection of reducer functions describing how the slice state should change in response to dispatched actions
-        setAllApplicants: (state, action) => { // define reducer setAllApplicants which updates state based on provided action payload
-            state.applicants = action.payload; // assign action.payload to applicants to store new list of applicants in the state
+    reducers: { /* this is the container of functions to change the value of state
+        create functions to update values of states defined in 'initialState' part, they take two arguments: 'state' which is the 
+        state to update and 'action' which contains the new value to update the state with in it's payload
+        update the state the functions are supposed to update with the value contained by the 'payload' property of 'action' */
+        
+        setAllApplicants: (state, action) => {
+            state.applicants = action.payload;
         }
     }
 });
 
-export const { setAllApplicants } = applicationSlice.actions; // extract and export setAllApplicants action creator for dispatching applicant updates from ui components
-export default applicationSlice.reducer; // export reducer function as default to integrate applicationSlice into the redux store configuration
+export const { setAllApplicants } = applicationSlice.actions; // export the function defined in reducers to update the value of state variable related to applicants data
+
+export default applicationSlice.reducer; // export the reducer to be used in redux store
