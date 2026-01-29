@@ -1,129 +1,143 @@
-import React, { useEffect, useState } from 'react' // import react and hooks useState for state handling and useEffect for running side effects
-import Navbar from '../shared/Navbar' // import navbar component to show navigation bar at the top
-import { Label } from '../ui/label' // import label component to display input field labels
-import { Input } from '../ui/input' // import input component to render text and file inputs
-import { RadioGroup } from '../ui/radio-group' // import radiogroup to group multiple radio input options
-import { Button } from '../ui/button' // import button component to display styled buttons
-import { Link, useNavigate } from 'react-router-dom' // import link for navigation and useNavigate hook for page redirection
-import axios from 'axios' // import axios library to send http requests
-import { USER_API_END_POINT } from '@/utils/constant' // import api endpoint constant for user operations
-import { toast } from 'sonner' // import toast utility to display success or error notifications
-import { useDispatch, useSelector } from 'react-redux' // import redux hooks to read global state and dispatch actions
-import { setLoading } from '@/redux/authSlice' // import redux action to update loading state
-import { Loader2 } from 'lucide-react' // import loader2 icon to visually indicate loading state
+import React, { useEffect, useState } from 'react' // from React library, import 'useEffect' hook to perform side effects and 'useState' hook to create and manage state variables
+import Navbar from '../shared/Navbar'
+import { Label } from '../ui/label'
+import { Input } from '../ui/input'
+import { RadioGroup } from '../ui/radio-group'
+import { Button } from '../ui/button'
+import { Link, useNavigate } from 'react-router-dom' // from 'react-router-dom' library, import 'Link' component to create links to different routes and 'useNavigate' hook to actually navigate to different routes
+import axios from 'axios' // import 'axios' library to make HTTP requests to the backend
+import { USER_API_END_POINT } from '@/utils/constant' // import URL of the backend to send requests to
+import { toast } from 'sonner' // import 'toast' to render pop-up messages
+import { useDispatch, useSelector } from 'react-redux'; // import 'useDispatch' hook to dispatch actions to redux store and 'useSelector' hook to select state from the Redux store
+import { setLoading } from '@/redux/authSlice' // import 'setLoading' function from 'authSlice' to update values of authentication related states
+import { Loader2 } from 'lucide-react'
 
-const Signup = () => { // define functional component 'Signup' to render signup form
-    const [input, setInput] = useState({ // initialize local state 'input' to store form field values
-        fullname: "", // store user's full name
-        email: "", // store user's email address
-        phoneNumber: "", // store user's phone number
-        password: "", // store user's password
-        role: "", // store user's selected role
-        file: "" // store uploaded profile image file
-    })
+const Signup = () => { // create a functional component called 'Signup' to render signup page
+    const [input, setInput] = useState({ fullname: "", email: "", phoneNumber: "", password: "", role: "", file: "" })
+    // create a state variable called 'input' which contains an object with 3 properties: full name, email, phone number, password, role (recruiter or job seeker), and file (image uploaded by user as profile picture)
+    // initial values of all these properties is an empty string and a function called 'setInput' to change values of these properties
 
-    const { loading, user } = useSelector( // extract loading and user states from redux store
-        store => store.auth // access auth slice to retrieve authentication-related state
-    )
-    const dispatch = useDispatch() // create dispatch function to send redux actions
-    const navigate = useNavigate() // create navigate function to programmatically redirect user
+    const { loading, user } = useSelector(store => store.auth) // use 'useSelector' hook to access 'loading' and 'user' states from 'auth' part of redux store
 
-    const changeEventHandler = (e) => { // define function to handle text input changes dynamically
-        setInput({ ...input, [e.target.name]: e.target.value }) // spread previous input values and update changed field using event target name
+    const navigate = useNavigate() // create an instance of 'useNavigate' hook to use it to navigate users to different routes
+
+    const dispatch = useDispatch() // create an instace of 'useDispatch' hook to dispatch actions to redux store to update values of states
+
+    const changeEventHandler = (e) => { // create a function called 'changeEventHandler' that takes an event object as argument
+        setInput({ ...input, [e.target.name]: e.target.value }) // use 'setInput' function to copy values of unchanged login page
+        // input fields using spread operator and change value of input field in which another value is given, this is all being
+        // done in 'input' object to update input field details when user gives any other input to the input fields
     }
 
-    const changeFileHandler = (e) => { // define function to handle file selection input
-        setInput({ ...input, file: e.target.files?.[0] }) // update file key in input state with first selected file
+    const changeFileHandler = (e) => { // create a function called 'changeFileHandler' that takes an event object as argument
+        setInput({ ...input, file: e.target.files?.[0] }) // use 'setInput' function to copy values of unchanged login page
+        // input fields using spread operator and change value of 'file' input field in which another value is given, this is all being
+        // done in 'input' object to update 'file' input field details when user gives any other input to the 'file' field
     }
 
-    const submitHandler = async (e) => { // define asynchronous function to handle form submission
-        e.preventDefault() // prevent page reload on form submit
-        const formData = new FormData() // create new formdata object to send form values in multipart format
-        formData.append("fullname", input.fullname) // add fullname value to formdata
-        formData.append("email", input.email) // add email value to formdata
-        formData.append("phoneNumber", input.phoneNumber) // add phone number value to formdata
-        formData.append("password", input.password) // add password value to formdata
-        formData.append("role", input.role) // add role value to formdata
-        if (input.file) { // check if file is present before appending
-            formData.append("file", input.file) // add file to formdata for upload
-        }
-        try { // start try block to handle api request safely
-            dispatch(setLoading(true)) // set loading to true before making api call
-            const res = await axios.post( // send post request to backend register endpoint
-                `${USER_API_END_POINT}/register`, // construct full url using endpoint constant
-                formData, // send formdata containing user inputs
-                { 
-                    headers: { 'Content-Type': "multipart/form-data" }, // specify multipart content type for file uploads
-                    withCredentials: true // include credentials for cookie-based authentication
+    const submitHandler = async (e) => {
+        e.preventDefault() // prevent default behavior of the form so that it submits after doing what we want to happen before form actually submits
+
+        const formData = new FormData() // create an instance of 'FormData' object to fill form input fields as a JSON object to send to the backend
+
+        // add form input field values into this instance (including user profile picture as file if given by user)
+
+        formData.append("fullname", input.fullname)
+        formData.append("email", input.email)
+        formData.append("phoneNumber", input.phoneNumber)
+        formData.append("password", input.password)
+        formData.append("role", input.role)
+
+        if (input.file) formData.append("file", input.file)
+
+        try {
+            dispatch(setLoading(true)) // set value of 'loading' state to true by dispatching it to 'setLoading' function of redux store
+
+            const res = await axios.post( // make a POST request to the backend using 'axios' library
+                `${USER_API_END_POINT}/register`, // this is the backend URL to make POST request to
+                input, // this is the data to send to the backend URL, it contains the values filled in signup form fields as an object
+                {
+                    headers: { "Content-Type": "application/json" }, // the data is being sent in JSON form
+                    withCredentials: true // send cookies to the backend along with the form fields data for authentication
                 }
             )
-            if (res.data.success) { // check if registration was successful
-                navigate("/login") // redirect user to login page
-                toast.success(res.data.message) // display success message from server
+
+            if (res.data.success) { // if data is sent to the backend successfully
+                dispatch(setUser(res.data.user)) // dispatch the data sent by backend as response to 'user' state using 'setUser' function
+                navigate("/login") // navigate user to login page
+                toast.success(res.data.message) // whatever message the backend sent as response, show it as a pop-up message
             }
-        } catch (error) { // handle any errors during api request
-            console.log(error) // log error for debugging purposes
-            toast.error(error.response.data.message) // show error notification from backend
-        } finally { // execute cleanup actions regardless of outcome
-            dispatch(setLoading(false)) // set loading to false after api request finishes
+        } catch (error) { // if any error occurs while submitting the login form details
+            console.log(error) // log the error to the console to know what error occured
+            toast.error(error.response.data.message) // whatever error message the backend sent as response, show it as a pop-up message
+        } finally {
+            dispatch(setLoading(false)) // finally set value of 'loading' state to false by dispatching this value to 'setLoading' function
         }
     }
 
-    useEffect(() => { // define effect to check authentication status when component mounts
-        if (user) { // check if user already logged in
-            navigate("/") // redirect logged-in user to homepage
+    // create a side-effect that runs only once (as soon as the login page renders), if user exists, navigate it to home page as it doesn't need to register
+    
+    useEffect(() => {
+        if (user) {
+            navigate("/")
         }
-    }, []) // run only once on component mount
+    }, [])
 
-    return ( // return jsx layout for signup form ui
+    return (
         <div>
-            <Navbar /> // render navbar at top of page
+            <Navbar />
+            
             <div className='flex items-center justify-center max-w-7xl mx-auto'>
-                <form 
-                    onSubmit={submitHandler} // attach form submit handler
+                <form
+                    onSubmit={submitHandler} // submitting this form calls 'submitHandler' function
                     className='w-1/2 border border-gray-200 rounded-md p-4 my-10'
                 >
                     <h1 className='font-bold text-xl mb-5'>Sign Up</h1>
+
                     <div className='my-2'>
                         <Label>Full Name</Label>
                         <Input
                             type="text"
                             value={input.fullname}
                             name="fullname"
-                            onChange={changeEventHandler} // call changeEventHandler to update fullname state
+                            onChange={changeEventHandler}
                             placeholder="Enter your name"
                         />
                     </div>
+
                     <div className='my-2'>
                         <Label>Email</Label>
                         <Input
                             type="email"
                             value={input.email}
                             name="email"
-                            onChange={changeEventHandler} // call changeEventHandler to update email state
+                            onChange={changeEventHandler}
                             placeholder="Enter your email"
                         />
                     </div>
+
                     <div className='my-2'>
                         <Label>Phone Number</Label>
                         <Input
                             type="text"
                             value={input.phoneNumber}
                             name="phoneNumber"
-                            onChange={changeEventHandler} // call changeEventHandler to update phone number state
+                            onChange={changeEventHandler}
                             placeholder="Enter your contact number"
                         />
                     </div>
+
                     <div className='my-2'>
                         <Label>Password</Label>
                         <Input
                             type="password"
                             value={input.password}
                             name="password"
-                            onChange={changeEventHandler} // call changeEventHandler to update password state
+                            onChange={changeEventHandler}
                             placeholder="Enter your password"
                         />
                     </div>
+
                     <div className='flex items-center justify-between'>
                         <RadioGroup className="flex items-center gap-4 my-5">
                             <div className="flex items-center space-x-2">
@@ -131,44 +145,55 @@ const Signup = () => { // define functional component 'Signup' to render signup 
                                     type="radio"
                                     name="role"
                                     value="student"
-                                    checked={input.role === 'student'} // check the box if user is a student
-                                    onChange={changeEventHandler} // call changeEventHandler to set role as student
+                                    checked={input.role === 'student'} // by default check this option if user is job seeker
+                                    onChange={changeEventHandler}
                                     className="cursor-pointer"
                                 />
-                                <Label htmlFor="r1">Student</Label>
+                                <Label>Student</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Input
                                     type="radio"
                                     name="role"
                                     value="recruiter"
-                                    checked={input.role === 'recruiter'} // check the box of user is a recruiter
-                                    onChange={changeEventHandler} // call changeEventHandler to set role as recruiter
+                                    checked={input.role === 'recruiter'} // by default check this option if user is recruiter
+                                    onChange={changeEventHandler}
                                     className="cursor-pointer"
                                 />
-                                <Label htmlFor="r2">Recruiter</Label>
+                                <Label>Recruiter</Label>
                             </div>
                         </RadioGroup>
+
                         <div className='flex items-center gap-2'>
                             <Label>Profile</Label>
                             <Input
-                                accept="image/*"
+                                accept="image/*" // this input field accepts images only
                                 type="file"
-                                onChange={changeFileHandler} // call changeFileHandler to store selected profile image
+                                onChange={changeFileHandler}
                                 className="cursor-pointer"
                             />
                         </div>
                     </div>
+
                     {
-                        loading // check if loading state is true
-                        ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> // show loading spinner while submitting
-                        : <Button type="submit" className="w-full my-4">Signup</Button> // show signup button when not loading
+                        loading // if value of 'loading' state is true, render a loading spinner with 'Please wait' text, otherwise render a button called 'Signup' clicking which submits the form
+                            ? <Button className="w-full my-4">
+                                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                                Please wait
+                            </Button>
+                            : <Button type="submit" className="w-full my-4">
+                                Signup
+                            </Button>
                     }
-                    <span className='text-sm'>Already have an account? <Link to="/login" className='text-blue-600'>Login</Link></span> {/* show link to login page for existing users */}
+
+                    <span className='text-sm'>
+                        Already have an account?
+                        <Link to="/login" className='text-blue-600'>Login</Link> {/* render a link to Login page user can go to if it is already registered */}
+                    </span>
                 </form>
             </div>
         </div>
     )
 }
 
-export default Signup // export signup component as default to use in other parts of app
+export default Signup
