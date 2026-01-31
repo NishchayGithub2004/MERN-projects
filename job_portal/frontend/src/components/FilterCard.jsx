@@ -1,61 +1,61 @@
-import React, { useEffect, useState } from 'react' // import React along with useEffect and useState hooks for handling lifecycle logic and component state
-import { RadioGroup, RadioGroupItem } from './ui/radio-group' // import radio group components to allow users to select filtering options
-import { Label } from './ui/label' // import Label component to associate text with radio buttons
-import { useDispatch } from 'react-redux' // import useDispatch hook to send actions to Redux store
-import { setSearchedQuery } from '@/redux/jobSlice' // import Redux action to update searched query value in the job slice
+import React, { useEffect, useState } from 'react'
+import { RadioGroup, RadioGroupItem } from './ui/radio-group'
+import { Label } from './ui/label'
+import { useDispatch } from 'react-redux' // from 'react-redux' library, import 'useDispatch' hook to dispatch actions to redux store to update values of redux states
+import { setSearchedQuery } from '@/redux/jobSlice' // from 'jobSlice', import 'setSearchedQuery' function to update value of 'searchedQuery' state in redux store
 
-const fitlerData = [ // define a constant array 'fitlerData' containing filter categories and their corresponding options
+// create an array of objects to store filter type and data to be used for filtering jobs
+const fitlerData = [
     {
-        fitlerType: "Location", // specify filter type as 'Location' to categorize by job location
-        array: ["Delhi NCR", "Bangalore", "Hyderabad", "Pune", "Mumbai"] // store list of available location options
+        fitlerType: "Location",
+        array: ["Delhi NCR", "Bangalore", "Hyderabad", "Pune", "Mumbai"]
     },
     {
-        fitlerType: "Industry", // specify filter type as 'Industry' to categorize by job role type
-        array: ["Frontend Developer", "Backend Developer", "FullStack Developer"] // store list of industry/job role options
+        fitlerType: "Industry",
+        array: ["Frontend Developer", "Backend Developer", "FullStack Developer"]
     },
     {
-        fitlerType: "Salary", // specify filter type as 'Salary' to categorize by pay range
-        array: ["0-40k", "42-1lakh", "1lakh to 5lakh"] // store list of salary range options
+        fitlerType: "Salary",
+        array: ["0-40k", "42-1lakh", "1lakh to 5lakh"]
     },
 ]
 
-const FilterCard = () => { // define a functional component named 'FilterCard' to render job filter options and update search query state
-    const [selectedValue, setSelectedValue] = useState('') // initialize state variable 'selectedValue' to track currently selected filter option
+const FilterCard = () => { // create a functional component named 'FilterCard' to render filtered data
+    const [selectedValue, setSelectedValue] = useState('') // create a state variable named 'selectedValue' and a function called 'setSelectedValue' to change it's value
 
-    const dispatch = useDispatch() // create Redux dispatch function to trigger global state updates
+    const dispatch = useDispatch() // create an instance of 'useDispatch' hook to use it to dispatch actions to update values of redux states
 
-    const changeHandler = ( // define a function 'changeHandler' to update local state when a user selects a new filter option
-        value // parameter 'value' holds the selected radio option text
-    ) => { 
-        setSelectedValue(value) // update local 'selectedValue' state with newly selected filter value
+    const changeHandler = (value) => { // create a function named 'changeHandler' to change the value of 'selectedValue' state
+        setSelectedValue(value) // update 'selectedValue' state with the new value
     }
     
-    useEffect(() => { // use effect hook to perform side effects whenever selectedValue changes
-        dispatch(setSearchedQuery(selectedValue)) // dispatch Redux action to set the searched query as the selected filter value
-    }, [selectedValue]) // include selectedValue in dependency array to re-run effect only when selection changes
+    useEffect(() => { // use 'useEffect' hook to perform side effects in the component
+        dispatch(setSearchedQuery(selectedValue)) // dispatch 'setSearchedQuery' action with 'selectedValue' as the modified value of 'searchedQuery' state
+    }, [selectedValue]) // re-run this effect when value of 'selectedValue' changes
 
     return (
         <div className='w-full bg-white p-3 rounded-md'>
             <h1 className='font-bold text-lg'>Filter Jobs</h1>
             <hr className='mt-3' />
-            <RadioGroup 
-                value={selectedValue} // bind selectedValue state to RadioGroup value so UI reflects current selection
-                onValueChange={changeHandler} // call changeHandler whenever user selects a different radio option
+            <RadioGroup
+                value={selectedValue} // value of radio group is the value of 'selectedValue' state
+                onValueChange={changeHandler} // when value of radio group changes, call 'changeHandler' function
             >
                 {
-                    fitlerData.map((data, index) => ( // iterate through each filter category object in fitlerData array
-                        <div key={index}>
-                            <h1 className='font-bold text-lg'>{data.fitlerType}</h1>
+                    fitlerData.map((data, index) => ( // iterate over elements of 'fitlerData' array as 'data' with it's index
+                        <div key={index}> {/* index of element is the unique identifier of each item in the array */}
+                            <h1 className='font-bold text-lg'>{data.fitlerType}</h1> {/* render filter type as text of the item */}
                             {
-                                data.array.map((item, idx) => { // iterate through each available option under the current filter category
-                                    const itemId = `id${index}-${idx}` // create unique id string for each radio input for label association
+                                data.array.map((item, idx) => { // iterate over elements of array present in data as 'item' with it's index
+                                    const itemId = `id${index}-${idx}` // create a unique identifier for each item
+                                    
                                     return (
-                                        <div className='flex items-center space-x-2 my-2' key={itemId}>
-                                            <RadioGroupItem 
-                                                value={item} // set radio input value to current option
-                                                id={itemId} // assign generated id to connect label with corresponding input
+                                        <div className='flex items-center space-x-2 my-2' key={itemId}> {/* 'itemId' is the unique identifier of each item in the array */}
+                                            <RadioGroupItem
+                                                value={item} // value of radio button is the value of 'item' state
+                                                id={itemId} // id of radio button is the value of 'itemId' state
                                             />
-                                            <Label htmlFor={itemId}>{item}</Label> {/* render label text corresponding to current radio option */}
+                                            <Label htmlFor={itemId}>{item}</Label> {/* label of radio button is the value of 'item' state */}
                                         </div>
                                     )
                                 })
@@ -68,4 +68,4 @@ const FilterCard = () => { // define a functional component named 'FilterCard' t
     )
 }
 
-export default FilterCard // export FilterCard component to make it reusable across the application
+export default FilterCard

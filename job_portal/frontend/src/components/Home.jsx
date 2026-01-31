@@ -1,33 +1,35 @@
-import React, { useEffect } from 'react' // import React for component creation and useEffect hook to perform side effects
-import Navbar from './shared/Navbar' // import Navbar component to display the top navigation bar
-import HeroSection from './HeroSection' // import HeroSection component for main introductory banner and search functionality
-import CategoryCarousel from './CategoryCarousel' // import CategoryCarousel component to show job categories in a sliding layout
-import LatestJobs from './LatestJobs' // import LatestJobs component to display recently posted job listings
-import Footer from './shared/Footer' // import Footer component to show footer content at the bottom
-import useGetAllJobs from '@/hooks/useGetAllJobs' // import custom hook to fetch all job listings from backend API
-import { useSelector } from 'react-redux' // import useSelector hook to read Redux store state
-import { useNavigate } from 'react-router-dom' // import useNavigate hook to programmatically navigate between pages
+import React, { useEffect } from 'react' // import 'useEffect' hook to run side-effects in components
+import Navbar from './shared/Navbar'
+import HeroSection from './HeroSection'
+import CategoryCarousel from './CategoryCarousel'
+import LatestJobs from './LatestJobs'
+import Footer from './shared/Footer'
+import useGetAllJobs from '@/hooks/useGetAllJobs' // import custom hook 'useGetAllJobs' to fetch all jobs from backend API
+import { useSelector } from 'react-redux' // import 'useSelector' function from 'react-redux' library to access a slice from redux store
+import { useNavigate } from 'react-router-dom' // import 'useNavigate' function from 'react-router-dom' library to navigate to different routes
 
-const Home = () => { // define a functional component named 'Home' to serve as the main landing page
-    useGetAllJobs() // call the custom hook to load all job data when the component is rendered
+const Home = () => {
+    useGetAllJobs() // call custom hook 'useGetAllJobs' to fetch all jobs from backend API
 
-    const { user } = useSelector(store => store.auth) // retrieve 'user' object from Redux auth slice to determine login role
+    const { user } = useSelector(store => store.auth) // retrieve 'user' object from 'auth' slice of redux store
 
-    const navigate = useNavigate() // create a navigate instance to redirect user to specific routes
+    const navigate = useNavigate() // create an instance of 'useNavigate' hook to use it to redirect user to specific routes
 
-    useEffect(() => { // execute logic when component mounts
-        if (user?.role === 'recruiter') navigate("/admin/companies") // if user is a recruiter, redirect to recruiter dashboard route
-    }, []) // run this effect only once on initial render
+    // create a side-effect that happens only once (when a component mounts) that navigates user to companies page if user is a recruiter
+
+    useEffect(() => {
+        if (user?.role === 'recruiter') navigate("/admin/companies")
+    }, [])
 
     return (
         <div>
-            <Navbar /> 
-            <HeroSection /> 
-            <CategoryCarousel /> 
-            <LatestJobs /> 
-            <Footer /> 
+            <Navbar />
+            <HeroSection />
+            <CategoryCarousel />
+            <LatestJobs />
+            <Footer />
         </div>
     )
 }
 
-export default Home // export Home component for usage in route configuration or parent components
+export default Home

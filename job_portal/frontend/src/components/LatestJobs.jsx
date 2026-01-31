@@ -1,9 +1,9 @@
-import React from 'react' // import React library to define and render functional components
-import LatestJobCards from './LatestJobCards' // import LatestJobCards component to display individual job details as cards
-import { useSelector } from 'react-redux' // import useSelector hook to access state from Redux store
+import React from 'react'
+import LatestJobCards from './LatestJobCards'
+import { useSelector } from 'react-redux' // import 'useSelector' hook from 'react-redux' library to access slices from redux store
 
-const LatestJobs = () => { // define a functional component named 'LatestJobs' to show a section of latest job postings
-    const { allJobs } = useSelector(store => store.job) // extract allJobs array from Redux store to get all available job listings
+const LatestJobs = () => { // create a functional component named 'LatestJobs' to render latest jobs
+    const { allJobs } = useSelector(store => store.job) // access 'allJobs' state from 'job' slice
 
     return (
         <div className='max-w-7xl mx-auto my-20'>
@@ -12,12 +12,12 @@ const LatestJobs = () => { // define a functional component named 'LatestJobs' t
             </h1>
             <div className='grid grid-cols-3 gap-4 my-5'>
                 {
-                    allJobs.length <= 0 // check if there are no jobs in the array
-                    ? <span>No Job Available</span> // display message when job list is empty
-                    : allJobs.slice(0, 6).map((job) => ( // take first 6 jobs from allJobs array to show latest openings
-                        <LatestJobCards 
-                            key={job._id} // assign unique key for React rendering optimization using job ID
-                            job={job} // pass current job object as prop to LatestJobCards component for rendering
+                    allJobs.length <= 0 // if 'allJobs' array is empty ie no jobs are present
+                    ? <span>No Job Available</span>
+                    : allJobs.slice(0, 6).map((job) => ( // otherwise iterate over first 6 jobs ie first 6 elements of 'allJobs' array
+                        <LatestJobCards // render 'LatestJobCards' component for each job
+                            key={job._id} // unique ID of the job is the component's unique identifier
+                            job={job} // pass 'job' object as a prop to 'LatestJobCards' component ie job details
                         />
                     ))
                 }
@@ -26,4 +26,4 @@ const LatestJobs = () => { // define a functional component named 'LatestJobs' t
     )
 }
 
-export default LatestJobs // export LatestJobs component to make it available for import in other files
+export default LatestJobs

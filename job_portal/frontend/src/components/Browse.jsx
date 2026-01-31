@@ -1,32 +1,38 @@
-import React, { useEffect } from 'react' // import React for JSX support and useEffect hook to handle side effects
-import Navbar from './shared/Navbar' // import Navbar component for consistent top navigation
-import Job from './Job' // import Job component to display each job item
-import { useDispatch, useSelector } from 'react-redux' // import Redux hooks to read from and dispatch actions to the global store
-import { setSearchedQuery } from '@/redux/jobSlice' // import action to reset the searched query state
-import useGetAllJobs from '@/hooks/useGetAllJobs' // import custom hook that fetches all jobs when the component mounts
+import React, { useEffect } from 'react'
+import Navbar from './shared/Navbar'
+import Job from './Job'
+import { useDispatch, useSelector } from 'react-redux' // import 'useDispatch' hook to dispatch actions to redux store and 'useSelector' hook to select state from the Redux store
+import { setSearchedQuery } from '@/redux/jobSlice' // import 'setSearchedQuery' function from 'jobSlice' to modify value of search string written to search for a job
+import useGetAllJobs from '@/hooks/useGetAllJobs' // import 'useGetAllJobs' custom hook to get all jobs from backend
 
-const Browse = () => { // define a functional component named 'Browse' to display a list of all available jobs with search results
-    useGetAllJobs() // call custom hook to fetch all jobs and update Redux store when component renders
+const Browse = () => { // create a functional component named 'Browse' to render jobs shown as result of searching for them
+    useGetAllJobs() // call 'useGetAllJobs' custom hook
 
-    const { allJobs } = useSelector(store => store.job) // extract 'allJobs' array from Redux job slice to access job listings
+    const { allJobs } = useSelector(store => store.job) // extract 'allJobs' array from 'job' slice of redux store to access all jobs posted by recruiters
 
-    const dispatch = useDispatch() // initialize dispatch function to trigger Redux actions
+    const dispatch = useDispatch() // create an instance of 'useDispatch' hook to use it to dispatch actions to update states in redux slices
 
-    useEffect(() => { // use effect hook to define cleanup logic that runs when component mounts
-        return () => { // specify cleanup callback executed during unmount
-            dispatch(setSearchedQuery("")) // reset searched query in Redux store to prevent showing old search data
+    // create a side-effect using 'useEffect' hook that runs only once (when the component mounts) that dispatched empty string as modified value of 'searchedQuery' state using 'setSearchedQuery' function
+
+    useEffect(() => {
+        return () => {
+            dispatch(setSearchedQuery(""))
         }
-    }, []) // empty dependency array ensures effect runs only once during mount
+    }, [])
 
     return (
         <div>
-            <Navbar /> 
+            <Navbar />
+
             <div className='max-w-7xl mx-auto my-10'>
-                <h1 className='font-bold text-xl my-10'>Search Results ({allJobs.length})</h1> {/* display count of fetched jobs dynamically */}
+                <h1 className='font-bold text-xl my-10'>
+                    Search Results ({allJobs.length}) {/* render number of jobs found as a result of search query */}
+                </h1>
                 <div className='grid grid-cols-3 gap-4'>
                     {
-                        allJobs.map((job) => ( // iterate over all jobs to render each one dynamically
-                            <Job key={job._id} job={job}/> // render Job component for each job, passing job details as props and assigning unique key
+                        // iterate over 'allJobs' array of objects ie jobs found from search string and render 'Job' component for each job
+                        allJobs.map((job) => (
+                            <Job key={job._id} job={job} /> // pass current object as prop with it's unique ID working as it's unique identifier
                         ))
                     }
                 </div>
@@ -35,4 +41,4 @@ const Browse = () => { // define a functional component named 'Browse' to displa
     )
 }
 
-export default Browse // export the Browse component so it can be used in other parts of the app
+export default Browse
