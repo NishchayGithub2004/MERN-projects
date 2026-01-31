@@ -1,141 +1,148 @@
-import React, { useState } from 'react' // import React library to define components and useState hook to manage local state
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog' // import dialog components to render modal interface for updating user profile
-import { Label } from './ui/label' // import label component for describing input fields in the form
-import { Input } from './ui/input' // import input component for text or file entry fields in the form
-import { Button } from './ui/button' // import button component for user-triggered actions like submit
-import { Loader2 } from 'lucide-react' // import loader2 icon to visually indicate loading state
-import { useDispatch, useSelector } from 'react-redux' // import redux hooks to access and modify global application state
-import axios from 'axios' // import axios library to handle http requests for data submission
-import { USER_API_END_POINT } from '@/utils/constant' // import constant storing base api endpoint for user-related requests
-import { setUser } from '@/redux/authSlice' // import redux action creator to update user details in global store
-import { toast } from 'sonner' // import toast utility to display temporary feedback messages to the user
+import React, { useState } from 'react' // import 'useState' hook to create and manage state variales
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog'
+import { Label } from './ui/label'
+import { Input } from './ui/input'
+import { Button } from './ui/button'
+import { Loader2 } from 'lucide-react'
+import { useDispatch, useSelector } from 'react-redux' // from 'react-redux' library, import 'useDispatch' hook to dispatch actions through functions to update value of state variables and 'useSelector' hook to access state variables of slices of redux store
+import axios from 'axios' // import 'axios' library to make HTTP requests to the backend
+import { USER_API_END_POINT } from '@/utils/constant' // import the backend URL to make HTTP requests to
+import { setUser } from '@/redux/authSlice' // import 'setUser' action from 'authSlice' slice of redux store to update user details
+import { toast } from 'sonner' // import 'toast' function from 'sonner' library to display toast/pop-up notifications
 
-const UpdateProfileDialog = ({ open, setOpen }) => { // define a functional component named updateprofiledialog that receives open state and setopen function as props to control modal visibility
-    const [loading, setLoading] = useState(false) // initialize local state variable loading to track whether api request is in progress
+const UpdateProfileDialog = ({ open, setOpen }) => { // create a functional component called 'UpdateProfileDialog' to render UI to update user profile, it takes 'open' state variable and 'setOpen' function to change it's value as props
+    const [loading, setLoading] = useState(false) // create a state variable called 'loading' to track whether profile updating is happening or not with initial value of false and a function called 'setLoading' to change it's value
 
-    const { user } = useSelector(store => store.auth) // extract user object from redux auth slice to access current user's information
+    const { user } = useSelector(store => store.auth) // import 'user' object from 'auth' slice of redux store to get user details
 
-    const [input, setInput] = useState({ // initialize local state object input to store editable user profile details
-        fullname: user?.fullname || "", // assign user's fullname or default to empty string if not defined
-        email: user?.email || "", // assign user's email or default to empty string if not defined
-        phoneNumber: user?.phoneNumber || "", // assign user's phone number or default to empty string if not defined
-        bio: user?.profile?.bio || "", // assign user's bio from nested profile or default to empty string if not defined
-        skills: user?.profile?.skills?.map(skill => skill) || "", // copy skills array if it exists or default to empty string otherwise
-        file: user?.profile?.resume || "" // assign user's existing resume file or default to empty string if not defined
+    // create a state variable called 'input' to store user profile details, it is an object that contains following details of user as properties:
+    // full name, email, phone number, bio, skills, and resume file and a function called 'setInput' to change the values of these properties
+    const [input, setInput] = useState({
+        fullname: user?.fullname || "",
+        email: user?.email || "",
+        phoneNumber: user?.phoneNumber || "",
+        bio: user?.profile?.bio || "",
+        skills: user?.profile?.skills?.map(skill => skill) || "",
+        file: user?.profile?.resume || ""
     })
 
-    const dispatch = useDispatch() // obtain redux dispatch function to trigger state updates globally
+    const dispatch = useDispatch() // create an instance of 'useDispatch' hook to use it to dispatch actions to update values of state variables through functions
 
-    const changeEventHandler = (e) => { // define event handler to manage text input changes
-        setInput({ ...input, [e.target.name]: e.target.value }) // update corresponding field in input state based on input name and current value
+    const changeEventHandler = (e) => { // create a function called 'changeEventHandler' to update values of properties given in input fields, it takes event object as argument
+        setInput({ ...input, [e.target.name]: e.target.value }) // copy the existing properties and their values using spread operator and give updated value of property given in input field
     }
 
-    const fileChangeHandler = (e) => { // define event handler to manage file selection input
-        const file = e.target.files?.[0] // extract the first selected file from file input
-        setInput({ ...input, file }) // update input state by assigning selected file to file property
+    const fileChangeHandler = (e) => { // create a function called 'fileChangeHandler' to update value of file property given in input field, it takes event object as argument
+        const file = e.target.files?.[0] // get the file from the input field
+        setInput({ ...input, file }) // copy the existing properties and their values using spread operator and give updated value of file property given in input field
     }
 
-    const submitHandler = async (e) => { // define asynchronous function to handle form submission process
-        e.preventDefault() // prevent default form submission to avoid page reload
+    const submitHandler = async (e) => { // create a function called 'submitHandler' to do some things before, during and after submitting form, it takes event object as argument
+        e.preventDefault() // prevent form from submitting right after clicking submit button so that we can do some things before actually submitting the form
 
-        const formData = new FormData() // create new formdata object to handle multipart form submission with text and file data
+        const formData = new FormData() // create an instance of 'FormData' object to store form data
 
-        formData.append("fullname", input.fullname) // append fullname field from input state into formdata for api request
-        formData.append("email", input.email) // append email field from input state into formdata
-        formData.append("phoneNumber", input.phoneNumber) // append phone number field from input state into formdata
-        formData.append("bio", input.bio) // append bio field from input state into formdata
-        formData.append("skills", input.skills) // append skills field from input state into formdata
+        // to the object, add values of input fields for full name, email, phone number, bio, skills and resume file (if provided)
 
-        if (input.file) { // check if file property in input state contains a valid file
-            formData.append("file", input.file) // append selected resume file to formdata for upload
+        formData.append("fullname", input.fullname)
+        formData.append("email", input.email)
+        formData.append("phoneNumber", input.phoneNumber)
+        formData.append("bio", input.bio)
+        formData.append("skills", input.skills)
+
+        if (input.file) {
+            formData.append("file", input.file)
         }
 
-        try { // start try block to handle potential request errors
-            setLoading(true) // set loading state to true before sending request to indicate ongoing process
+        try {
+            setLoading(true) // set value of state variable 'loading' to true
 
-            const res = await axios.post( // send post request using axios to update user profile data
-                `${USER_API_END_POINT}/profile/update`, // dynamically build full api endpoint for profile update
-                formData, // pass formdata as request body containing form fields and optional file
+            const res = await axios.post( // make a POST request to the backend to update user profile
+                `${USER_API_END_POINT}/profile/update`, // this is the URL to make the POST request to
+                formData, // this is the form data to be given to the backend
                 {
-                    headers: { 'Content-Type': 'multipart/form-data' }, // set proper content type header for file upload
-                    withCredentials: true // include authentication cookies for secure user verification
+                    headers: { 'Content-Type': 'multipart/form-data' }, // the data will be provided in the form of form data
+                    withCredentials: true // cookies will also be sent to the backend for authentication
                 }
             )
 
-            if (res.data.success) { // verify if server response indicates successful profile update
-                dispatch(setUser(res.data.user)) // dispatch redux action to update user data in global store with new profile
-                toast.success(res.data.message) // display success message to notify user of successful update
+            if (res.data.success) { // if backend sends a response successfully
+                dispatch(setUser(res.data.user)) // send form details to 'user' object using 'setUser' function to update the user's details
+                toast.success(res.data.message) // display success message sent by the backend as a toast/pop-up messages
             }
-        } catch (error) { // handle exceptions during api request
-            console.log(error) // log encountered error in console for debugging
-            toast.error(error.response.data.message) // show error notification with message from server
-        } finally { // execute cleanup actions after try-catch completes
-            setLoading(false) // reset loading state to false after request completion
+        } catch (error) { // if an error occurs while submitting the form to backend to update user details
+            console.log(error) // log the error to the console to know what error occured
+            toast.error(error.response.data.message) // show the error message sent by the backend as a toast/pop-up message
+        } finally {
+            setLoading(false) // finally set value of 'loading' state variable to false
         }
-
-        setOpen(false) // close update profile dialog after submission completes
-
-        console.log(input) // output input state to console for debugging purpose
     }
 
     return (
         <div>
             <Dialog open={open}>
-                <DialogContent className="sm:max-w-[425px]" onInteractOutside={() => setOpen(false)}> {/* close dialog when user clicks outside modal area */}
+                <DialogContent className="sm:max-w-[425px]" onInteractOutside={() => setOpen(false)}> {/* interacting with this dialog box sets value of 'open' to false */}
                     <DialogHeader>
                         <DialogTitle>Update Profile</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={submitHandler}> {/* trigger submitHandler when user submits the form */}
+                    
+                    <form onSubmit={submitHandler}> {/* submitting this form calls 'submitHandler' function */}
                         <div className='grid gap-4 py-4'>
                             <div className='grid grid-cols-4 items-center gap-4'>
+                                {/* render input fields for full name, email, phone number, bio, skills and resume file */}
+
                                 <Label htmlFor="name" className="text-right">Name</Label>
                                 <Input
                                     id="name"
                                     name="name"
                                     type="text"
-                                    value={input.fullname} // bind input value to fullname from local state for controlled input
-                                    onChange={changeEventHandler} // update fullname in state when input value changes
+                                    value={input.fullname}
+                                    onChange={changeEventHandler}
                                     className="col-span-3"
                                 />
                             </div>
+                            
                             <div className='grid grid-cols-4 items-center gap-4'>
                                 <Label htmlFor="email" className="text-right">Email</Label>
                                 <Input
                                     id="email"
                                     name="email"
                                     type="email"
-                                    value={input.email} // bind input value to email from local state for controlled input
-                                    onChange={changeEventHandler} // update email field in state when user types
+                                    value={input.email}
+                                    onChange={changeEventHandler}
                                     className="col-span-3"
                                 />
                             </div>
+                            
                             <div className='grid grid-cols-4 items-center gap-4'>
                                 <Label htmlFor="number" className="text-right">Number</Label>
                                 <Input
                                     id="number"
                                     name="number"
-                                    value={input.phoneNumber} // bind input to phoneNumber state to maintain two-way data binding
-                                    onChange={changeEventHandler} // handle changes in phone number input and update state
+                                    value={input.phoneNumber}
+                                    onChange={changeEventHandler}
                                     className="col-span-3"
                                 />
                             </div>
+                            
                             <div className='grid grid-cols-4 items-center gap-4'>
                                 <Label htmlFor="bio" className="text-right">Bio</Label>
                                 <Input
                                     id="bio"
                                     name="bio"
-                                    value={input.bio} // bind bio input field to state for controlled form behavior
-                                    onChange={changeEventHandler} // handle bio field updates and sync state accordingly
+                                    value={input.bio}
+                                    onChange={changeEventHandler}
                                     className="col-span-3"
                                 />
                             </div>
+                            
                             <div className='grid grid-cols-4 items-center gap-4'>
                                 <Label htmlFor="skills" className="text-right">Skills</Label>
                                 <Input
                                     id="skills"
                                     name="skills"
-                                    value={input.skills} // bind skills input to state for editable list of user skills
-                                    onChange={changeEventHandler} // update state when user modifies skills field
+                                    value={input.skills}
+                                    onChange={changeEventHandler}
                                     className="col-span-3"
                                 />
                             </div>
@@ -146,19 +153,20 @@ const UpdateProfileDialog = ({ open, setOpen }) => { // define a functional comp
                                     name="file"
                                     type="file"
                                     accept="application/pdf"
-                                    onChange={fileChangeHandler} // handle file upload by updating state with selected file object
+                                    onChange={fileChangeHandler}
                                     className="col-span-3"
                                 />
                             </div>
                         </div>
+                        
                         <DialogFooter>
                             {
-                                loading
+                                loading // if value of 'loading' is false, render loading spinner with 'Please wait' text, otherwise render the button clicking which submits the form data
                                     ? <Button className="w-full my-4">
-                                        <Loader2 className='mr-2 h-4 w-4 animate-spin' /> {/* show spinning loader icon while API request is in progress */}
+                                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                                         Please wait
                                     </Button>
-                                    : <Button type="submit" className="w-full my-4">Update</Button> // display submit button when not loading to allow user to update profile
+                                    : <Button type="submit" className="w-full my-4">Update</Button>
                             }
                         </DialogFooter>
                     </form>
@@ -167,3 +175,5 @@ const UpdateProfileDialog = ({ open, setOpen }) => { // define a functional comp
         </div>
     )
 }
+
+export default UpdateProfileDialog

@@ -1,109 +1,165 @@
-import React, { useEffect, useState } from 'react' // import React library to define component and use hooks for managing side-effects and state
-import { Badge } from './ui/badge' // import Badge UI component to visually display job details like tags
-import { Button } from './ui/button' // import Button UI component to handle user actions such as applying for a job
-import { useParams } from 'react-router-dom' // import hook to access URL parameters like job ID for fetching job data
-import axios from 'axios' // import axios library to perform HTTP requests to backend API
-import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant' // import API endpoint constants for cleaner and maintainable URL management
-import { setSingleJob } from '@/redux/jobSlice' // import Redux action creator to update single job data in global state
-import { useDispatch, useSelector } from 'react-redux' // import Redux hooks to access state (useSelector) and dispatch actions (useDispatch)
-import { toast } from 'sonner' // import toast utility to display success or error notifications to user
+import React, { useEffect, useState } from 'react' // import 'useEffect' hook to run side-effects and 'useState' hook to create an manage state variables
+import { Badge } from './ui/badge'
+import { Button } from './ui/button'
+import { useParams } from 'react-router-dom' // import 'useParams' hook to get the job id from the URL by accessing URL parameters
+import axios from 'axios' // import 'axios' library to make HTTP requests to the backend
+import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant' // import job applications and job URLs to make backend requests to
+import { setSingleJob } from '@/redux/jobSlice' // import 'setSingleJob' function from 'jobSlice' of redux store to set job details
+import { useDispatch, useSelector } from 'react-redux' // from 'react-redux' library, import 'useDispatch' hook to dispatch actions through functions to update value of state variables and 'useSelector' hook to access state variables of slices of redux store
+import { toast } from 'sonner' // import 'toast' function from 'sonner' library to display toast/pop-up notifications
 
-const JobDescription = () => { // define a functional component named JobDescription to display a specific job and allow application handling
-    const { singleJob } = useSelector(store => store.job) // extract singleJob from job slice in Redux store to get currently selected job data
+const JobDescription = () => { // create a functional component named 'JobDescription' to render job description UI
+    const { singleJob } = useSelector(store => store.job) // import 'singleJob' state from 'job' slice of redux store to get the currently selected job details
+    
+    const { user } = useSelector(store => store.auth) // import 'user' state from 'auth' slice of redux store to get the currently logged in user details
 
-    const { user } = useSelector(store => store.auth) // extract authenticated user information from Redux store to check login and application status
+    const isIntiallyApplied = singleJob?.applications?.some(application => application.applicant === user?._id) || false // check if the current user has already applied for the job and store it in variable 'isInitiallyApplied'
 
-    const isIntiallyApplied = singleJob?.applications?.some(application => application.applicant === user?._id) || false // determine if user has already applied to this job; return false if data not available
+    const [isApplied, setIsApplied] = useState(isIntiallyApplied) // create a state variable 'isApplied' to track if the current user has applied for the job
 
-    const [isApplied, setIsApplied] = useState(isIntiallyApplied) // initialize local state isApplied with initial application status and allow updates when user applies
+    const params = useParams() // create an instance of 'useParams' hook use it to get the job id from the URL by accessing URL parameters
+    
+    const jobId = params.id // store unique ID of job from URL parameters in 'jobId' variable
 
-    const params = useParams() // retrieve dynamic route parameters such as job ID from URL
+    const dispatch = useDispatch() // create an instance of 'useDispatch' hook to use it to dispatch actions to update value of state variables
 
-    const jobId = params.id // store extracted job ID from params for API calls and state updates
-
-    const dispatch = useDispatch() // get dispatch function from Redux to update store when job data or application status changes
-
-    const applyJobHandler = async () => { // define asynchronous function to handle job application when user clicks apply button
-        try { // start error handling block to catch failed API calls
-            const res = await axios.get( // send GET request to backend API to apply for job
-                `${APPLICATION_API_END_POINT}/apply/${jobId}`, // dynamically construct endpoint URL using job ID
-                { withCredentials: true } // include credentials such as cookies for authentication
+    const applyJobHandler = async () => { // create a function called 'applyJobHandler' to apply to a job
+        try {
+            const res = await axios.get( // make a GET request to the backend URL
+                `${APPLICATION_API_END_POINT}/apply/${jobId}`, // URL to make backend request to
+                { withCredentials: true } // send cookies with the request to the backend for authentication
             )
 
-            if (res.data.success) { // check if API response indicates successful job application
-                setIsApplied(true) // update local state to reflect that user has applied successfully
-                
-                const updatedSingleJob = { // create updated job object reflecting new application state
-                    ...singleJob, // copy all existing job details
-                    applications: [ // update applications list with current user's new application
-                        ...singleJob.applications, 
-                        { applicant: user?._id } // add logged-in user's ID as applicant
+            if (res.data.success) { // if backend successfully sends a response
+                setIsApplied(true) // set value of state variable 'isApplied' to true
+
+                // create an object called 'updatedSingleJob' that copies existing current job details and add current job to it's 'applications' array property
+
+                const updatedSingleJob = {
+                    ...singleJob,
+                    applications: [
+                        ...singleJob.applications,
+                        { applicant: user?._id }
                     ]
                 }
 
-                dispatch(setSingleJob(updatedSingleJob)) // dispatch Redux action to update singleJob data in store for real-time UI update
-
-                toast.success(res.data.message) // show success notification message from API response
+                dispatch(setSingleJob(updatedSingleJob)) // dispatch updated job details object to 'singleJob' state using 'setSingleJob' function
+                
+                toast.success(res.data.message) // display success toast/pop-up notification
             }
-        } catch (error) { // catch block to handle request or server errors
-            console.log(error) // log error to console for debugging purposes
-            toast.error(error.response.data.message) // display error notification message to user
+        } catch (error) { // if any error occurs while applying to a job
+            console.log(error) // log the error to the console to know what error occurred
+            toast.error(error.response.data.message) // display error toast/pop-up notification
         }
     }
 
-    useEffect(() => { // define effect to fetch job data whenever jobId, dispatch, or user ID changes
-        const fetchSingleJob = async () => { // define asynchronous helper function to fetch single job details
-            try { // handle errors during fetch process
-                const res = await axios.get( // send GET request to backend to fetch job data
-                    `${JOB_API_END_POINT}/get/${jobId}`, // dynamically construct endpoint using job ID
-                    { withCredentials: true } // include credentials for authenticated request
+    useEffect(() => {
+        const fetchSingleJob = async () => { // create a function called 'fetchSingleJob' to fetch job details
+            try {
+                const res = await axios.get( // make a GET request to the backend
+                    `${JOB_API_END_POINT}/get/${jobId}`, // URL to make backend request to
+                    { withCredentials: true } // send cookies to the backend also for authentication
                 )
 
-                if (res.data.success) { // check if job fetch operation succeeded
-                    dispatch(setSingleJob(res.data.job)) // update Redux store with fetched job data
-                    
-                    setIsApplied( // synchronize local application state with server response
-                        res.data.job.applications.some(application => application.applicant === user?._id) // check if current user already applied
+                if (res.data.success) { // if backend successfully sends a response
+                    dispatch(setSingleJob(res.data.job)) // dispatch job details object to 'singleJob' state using 'setSingleJob' function
+                    // set value of 'isApplied' to true if the current user has already applied for the job
+                    setIsApplied(
+                        res.data.job.applications.some(
+                            application => application.applicant === user?._id
+                        )
                     )
                 }
-            } catch (error) { // catch API or network errors
-                console.log(error) // log error for debugging to developer console
+            } catch (error) { // if any error occurs while fetching job details
+                console.log(error) // log the error to the console to know what error occurred
             }
         }
 
-        fetchSingleJob() // immediately invoke fetch function to get job data on component mount or dependency change
-    }, [jobId, dispatch, user?._id]) // re-run effect when jobId, dispatch reference, or user ID changes
+        fetchSingleJob() // call the function to execute it
+    }, [jobId, dispatch, user?._id]) // re-run the function when user's unique ID, job' unique ID or dispatch function changes
 
     return (
         <div className='max-w-7xl mx-auto my-10'>
             <div className='flex items-center justify-between'>
                 <div>
-                    <h1 className='font-bold text-xl'>{singleJob?.title}</h1>
+                    <h1 className='font-bold text-xl'>{singleJob?.title}</h1> {/* render job title */}
+                    
                     <div className='flex items-center gap-2 mt-4'>
-                        <Badge className={'text-blue-700 font-bold'} variant="ghost">{singleJob?.postion} Positions</Badge>
-                        <Badge className={'text-[#F83002] font-bold'} variant="ghost">{singleJob?.jobType}</Badge>
-                        <Badge className={'text-[#7209b7] font-bold'} variant="ghost">{singleJob?.salary}LPA</Badge>
+                        {/* render number of vacancies available for the job, type of job, and salary of the job as badges */}
+                        <Badge className={'text-blue-700 font-bold'} variant="ghost">
+                            {singleJob?.postion} Positions
+                        </Badge>
+                        <Badge className={'text-[#F83002] font-bold'} variant="ghost">
+                            {singleJob?.jobType}
+                        </Badge>
+                        <Badge className={'text-[#7209b7] font-bold'} variant="ghost">
+                            {singleJob?.salary}LPA
+                        </Badge>
                     </div>
                 </div>
+
                 <Button
-                    onClick={isApplied ? null : applyJobHandler} // attach click handler only if user hasn't applied to avoid duplicate requests
-                    disabled={isApplied} // disable button if user already applied to prevent further interaction
-                    className={`rounded-lg ${isApplied ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#7209b7] hover:bg-[#5f32ad]'}`}>
-                    {isApplied ? 'Already Applied' : 'Apply Now'} {/* dynamically render button text based on application status */}
+                    onClick={isApplied ? null : applyJobHandler} // clicking the job calls 'applyJobHandler' function if value of 'isApplied' is false ie user hasn't applied for the job
+                    disabled={isApplied} // disable the button if value of 'isApplied' is true user has already applied for the job
+                    className={`rounded-lg ${isApplied // apply styles based on value of 'isApplied'
+                            ? 'bg-gray-600 cursor-not-allowed'
+                            : 'bg-[#7209b7] hover:bg-[#5f32ad]'
+                        }`}
+                >
+                    {isApplied ? 'Already Applied' : 'Apply Now'} {/* render text based on 'isApplied' value */}
                 </Button>
             </div>
+            
             <h1 className='border-b-2 border-b-gray-300 font-medium py-4'>Job Description</h1>
+            
             <div className='my-4'>
-                <h1 className='font-bold my-1'>Role: <span className='pl-4 font-normal text-gray-800'>{singleJob?.title}</span></h1>
-                <h1 className='font-bold my-1'>Location: <span className='pl-4 font-normal text-gray-800'>{singleJob?.location}</span></h1>
-                <h1 className='font-bold my-1'>Description: <span className='pl-4 font-normal text-gray-800'>{singleJob?.description}</span></h1>
-                <h1 className='font-bold my-1'>Experience: <span className='pl-4 font-normal text-gray-800'>{singleJob?.experience} yrs</span></h1>
-                <h1 className='font-bold my-1'>Salary: <span className='pl-4 font-normal text-gray-800'>{singleJob?.salary}LPA</span></h1>
-                <h1 className='font-bold my-1'>Total Applicants: <span className='pl-4 font-normal text-gray-800'>{singleJob?.applications?.length}</span></h1>
-                <h1 className='font-bold my-1'>Posted Date: <span className='pl-4 font-normal text-gray-800'>{singleJob?.createdAt.split("T")[0]}</span></h1> {/* extract and show only date part from ISO string for clarity */}
+                {/* render job title, location, description, experience required, salary, total applicants and date job was posted */}
+
+                <h1 className='font-bold my-1'>
+                    Role:
+                    <span className='pl-4 font-normal text-gray-800'>
+                        {singleJob?.title}
+                    </span>
+                </h1>
+                <h1 className='font-bold my-1'>
+                    Location:
+                    <span className='pl-4 font-normal text-gray-800'>
+                        {singleJob?.location}
+                    </span>
+                </h1>
+                <h1 className='font-bold my-1'>
+                    Description:
+                    <span className='pl-4 font-normal text-gray-800'>
+                        {singleJob?.description}
+                    </span>
+                </h1>
+                <h1 className='font-bold my-1'>
+                    Experience:
+                    <span className='pl-4 font-normal text-gray-800'>
+                        {singleJob?.experience} yrs
+                    </span>
+                </h1>
+                <h1 className='font-bold my-1'>
+                    Salary:
+                    <span className='pl-4 font-normal text-gray-800'>
+                        {singleJob?.salary}LPA
+                    </span>
+                </h1>
+                <h1 className='font-bold my-1'>
+                    Total Applicants:
+                    <span className='pl-4 font-normal text-gray-800'>
+                        {singleJob?.applications?.length}
+                    </span>
+                </h1>
+                <h1 className='font-bold my-1'>
+                    Posted Date:
+                    <span className='pl-4 font-normal text-gray-800'>
+                        {singleJob?.createdAt.split("T")[0]}
+                    </span>
+                </h1>
             </div>
         </div>
     )
 }
 
-export default JobDescription // export JobDescription component as default for external use
+export default JobDescription
