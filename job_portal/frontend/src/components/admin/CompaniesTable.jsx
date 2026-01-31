@@ -1,34 +1,34 @@
-import React, { useEffect, useState } from 'react' // import React to define the component and include useEffect for side effects and useState for managing component state
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '../ui/table' // import table components used to structure and render company data
-import { Avatar, AvatarImage } from '../ui/avatar' // import avatar components to display company logo images
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover' // import popover components to handle dropdown menu for each row
-import { Edit2, MoreHorizontal } from 'lucide-react' // import icons for edit option and three-dot menu symbol
-import { useSelector } from 'react-redux' // import useSelector to read company data and filters from Redux store
-import { useNavigate } from 'react-router-dom' // import useNavigate hook to programmatically redirect to edit company pages
+import React, { useEffect, useState } from 'react' // import 'useEffect' hook to run side-effects and 'useState' hook to create an manage state variables
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
+import { Avatar, AvatarImage } from '../ui/avatar'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
+import { Edit2, MoreHorizontal } from 'lucide-react'
+import { useSelector } from 'react-redux' // import 'useSelector' hook from 'react-redux' library to access redux slices from redux store
+import { useNavigate } from 'react-router-dom' // import 'useNavigate' hook from 'react-router-dom' library to navigate user to different pages
 
-const CompaniesTable = () => { // define a functional component named 'CompaniesTable' to display a searchable and filtered company list
-    const { companies, searchCompanyByText } = useSelector( // extract companies array and searchCompanyByText string from Redux store
-        store => store.company // access the company slice from Redux store to get state values
-    )
+const CompaniesTable = () => { // create a functional component called 'CompaniesTable' to render table of companies registered by the admin
+    const { companies, searchCompanyByText } = useSelector(store => store.company) // extract 'companies' and 'searchCompanyByText' states from 'company' slice of redux store
+    // first state contains all companies registered by the user, and second state contains search string used to search for a company
 
-    const [filterCompany, setFilterCompany] = useState(companies) // declare state variable 'filterCompany' to store filtered company list initialized with all companies
+    const [filterCompany, setFilterCompany] = useState(companies) // create a state variable 'filterCompany' to store the filtered companies with initial value of 'companies' ie all companies registered by the user and a function called 'setFilterCompany' to change its value
 
-    const navigate = useNavigate() // call useNavigate to obtain a navigation function for route changes
+    const navigate = useNavigate() // create an instance of 'useNavigate' hook to use it to navigate to different pages
 
-    useEffect(() => { // define a side effect that filters companies whenever companies data or search text changes
-        const filteredCompany = ( // declare a variable to hold newly filtered companies list
-            companies.length >= 0 && // check if companies array exists and can be iterated
-            companies.filter((company) => { // filter companies by checking name against search text
-                if (!searchCompanyByText) return true // if no search text is provided, include all companies
-                return company?.name?.toLowerCase().includes( // check if company name contains the search text ignoring case
-                    searchCompanyByText.toLowerCase() // convert search text to lowercase for consistent comparison
-                )
+    // create a side-effect that runs when companies registered by user or search string to search for a company changes, iterate over 'companies' ie all companies registered by the user
+    // if 'searchCompanyByText' is empty ie search string is not provided, return all companies, else return companies whose name matches the search string (make it case-insensitive by making all searches in lower case)
+    
+    useEffect(() => {
+        const filteredCompany = (
+            companies.length >= 0 && companies.filter((company) => {
+                if (!searchCompanyByText) return true
+                return company?.name?.toLowerCase().includes(searchCompanyByText.toLowerCase())
             })
         )
-        setFilterCompany(filteredCompany) // update filterCompany state with filtered list to re-render table
-    }, [companies, searchCompanyByText]) // rerun the effect when companies array or search text value changes
 
-    return ( // return JSX structure to render table with filtered companies
+        setFilterCompany(filteredCompany)
+    }, [companies, searchCompanyByText])
+
+    return (
         <div>
             <Table>
                 <TableCaption>A list of your recent registered companies</TableCaption>
@@ -41,37 +41,37 @@ const CompaniesTable = () => { // define a functional component named 'Companies
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {
-                        filterCompany?.map((company) => ( // iterate through filteredCompany array to render each company's data row
-                            <tr key={company._id}>
-                                <TableCell>
-                                    <Avatar>
-                                        <AvatarImage src={company.logo} /> 
-                                    </Avatar>
-                                </TableCell>
-                                <TableCell>{company.name}</TableCell>
-                                <TableCell>{company.createdAt.split("T")[0]}</TableCell>
-                                <TableCell className="text-right cursor-pointer">
-                                    <Popover>
-                                        <PopoverTrigger><MoreHorizontal /></PopoverTrigger>
-                                        <PopoverContent className="w-32">
-                                            <div
-                                                onClick={() => navigate(`/admin/companies/${company._id}`)} // navigate to the company-specific edit page when edit option is clicked
-                                                className='flex items-center gap-2 w-fit cursor-pointer'
-                                            >
-                                                <Edit2 className='w-4' />
-                                                <span>Edit</span>
-                                            </div>
-                                        </PopoverContent>
-                                    </Popover>
-                                </TableCell>
-                            </tr>
-                        ))
-                    }
+                    {filterCompany?.map((company) => ( // iterate over filtered companies
+                        <tr key={company._id}> {/* unique ID of the company works as its unique identifier in the table */} 
+                            <TableCell>
+                                <Avatar>
+                                    <AvatarImage src={company.logo} /> {/* render company logo */}
+                                </Avatar>
+                            </TableCell>
+                            <TableCell>{company.name}</TableCell> {/* render company name */}
+                            <TableCell>{company.createdAt.split("T")[0]}</TableCell> {/* render company creation date */}
+                            <TableCell className="text-right cursor-pointer">
+                                <Popover>
+                                    <PopoverTrigger>
+                                        <MoreHorizontal />
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-32">
+                                        <div
+                                            onClick={() => navigate(`/admin/companies/${company._id}`)} // clicking on 'Edit' button takes user to the company details
+                                            className='flex items-center gap-2 w-fit cursor-pointer'
+                                        >
+                                            <Edit2 className='w-4' />
+                                            <span>Edit</span>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                            </TableCell>
+                        </tr>
+                    ))}
                 </TableBody>
             </Table>
         </div>
     )
 }
 
-export default CompaniesTable // export CompaniesTable component as default for external use
+export default CompaniesTable

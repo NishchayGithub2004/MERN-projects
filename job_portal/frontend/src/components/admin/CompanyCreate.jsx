@@ -1,69 +1,72 @@
-import React, { useState } from 'react' // import React to define the component and include useState for managing local input state
-import Navbar from '../shared/Navbar' // import Navbar component to render consistent top header across pages
-import { Label } from '../ui/label' // import Label component to display input field labels
-import { Input } from '../ui/input' // import Input component to accept user text input
-import { Button } from '../ui/button' // import Button component to perform clickable actions
-import { useNavigate } from 'react-router-dom' // import useNavigate hook to programmatically navigate between routes
-import axios from 'axios' // import axios library to send HTTP requests to backend API
-import { COMPANY_API_END_POINT } from '@/utils/constant' // import predefined constant containing company API base URL
-import { toast } from 'sonner' // import toast utility to show success or error notifications
-import { useDispatch } from 'react-redux' // import useDispatch hook to dispatch Redux actions
-import { setSingleCompany } from '@/redux/companySlice' // import Redux action creator to set single company details in store
+import React, { useState } from 'react' // import 'useState' hook to create and manage state variables
+import Navbar from '../shared/Navbar'
+import { Label } from '../ui/label'
+import { Input } from '../ui/input'
+import { Button } from '../ui/button'
+import { useNavigate } from 'react-router-dom' // import 'useNavigate' hook from 'react-router-dom' library to navigate user to different pages
+import axios from 'axios' // import 'axios' library to send HTTP requests to the backend
+import { COMPANY_API_END_POINT } from '@/utils/constant' // import URL to send company related backend requests to
+import { toast } from 'sonner' // import 'toast' function from 'sonner' library to render toast/pop-up messages
+import { useDispatch } from 'react-redux' // import 'useDispatch' hook from 'react-redux' library to dispatch actions to state variables of redux slices to update their values
+import { setSingleCompany } from '@/redux/companySlice' // import 'setSingleCompany' function from 'companySlice' to update a single company's data
 
-const CompanyCreate = () => { // define a functional component named 'CompanyCreate' to handle new company creation process
-    const navigate = useNavigate() // call useNavigate to get navigation function for redirecting between admin routes
+const CompanyCreate = () => { // create a functional component named 'CompanyCreate' to render company creation page
+    const navigate = useNavigate() // create an instance of 'useNavigate' hook to use it to navigate to different pages
 
-    const [companyName, setCompanyName] = useState() // define a state variable 'companyName' to hold user input for new company name
+    const [companyName, setCompanyName] = useState() // create a state variable 'companyName' to store the name of the company being created and a function called 'setCompanyName' to change its value
 
-    const dispatch = useDispatch() // call useDispatch to obtain dispatch function for sending Redux actions
+    const dispatch = useDispatch() // create an instance of 'useDispatch' hook to use it to dispatch actions to state variables of redux slices to update their values
 
-    const registerNewCompany = async () => { // define asynchronous function to register a new company by sending API request
+    const registerNewCompany = async () => { // create a function called 'registerNewCompany' to register a new company
         try {
-            const res = await axios.post( // send POST request to backend API to create a new company
-                `${COMPANY_API_END_POINT}/register`, // specify API endpoint for registering new company
-                { companyName }, // send company name in request body to backend
+            const res = await axios.post( // make a POST request to the backend
+                `${COMPANY_API_END_POINT}/register`, // URL to make backend request to
+                { companyName }, // company name to be registered
                 {
-                    headers: { 'Content-Type': 'application/json' }, // set header to indicate JSON data type
-                    withCredentials: true // include authentication cookies in the request
+                    headers: { 'Content-Type': 'application/json' }, // company name is being sent in JSON format
+                    withCredentials: true // cookies are also sent with the request for authentication
                 }
             )
-            if (res?.data?.success) { // check if API response indicates successful company registration
-                dispatch( // send Redux action to update global store with newly created company data
-                    setSingleCompany(res.data.company) // call Redux action creator passing company object as payload
-                )
-                toast.success(res.data.message) // display toast notification with success message from response
-                const companyId = res?.data?.company?._id // extract newly created company ID from response
-                navigate(`/admin/companies/${companyId}`) // redirect user to the specific company’s details or edit page
+
+            if (res?.data?.success) { // if response successfully sends some data back
+                dispatch(setSingleCompany(res.data.company)) // dispatch response data to 'singleCompany' state
+                toast.success(res.data.message) // render toast/pop-up message sent by backend on successfully executing the request 
+                const companyId = res?.data?.company?._id // get company's unique ID
+                navigate(`/admin/companies/${companyId}`) // redirect to the page containing details of company with this unique ID
             }
-        } catch (error) {
-            console.log(error) // log any caught error to console for debugging
+        } catch (error) { // if any error occurs while registering new company
+            console.log(error) // log the error to the console to know what error occurred
         }
     }
 
-    return ( // return JSX structure to render input form and action buttons for creating a company
+    return (
         <div>
-            <Navbar /> 
+            <Navbar />
+            
             <div className='max-w-4xl mx-auto'>
                 <div className='my-10'>
                     <h1 className='font-bold text-2xl'>Your Company Name</h1>
                     <p className='text-gray-500'>What would you like to give your company name? you can change this later.</p>
                 </div>
+                
                 <Label>Company Name</Label>
+                
                 <Input
                     type="text"
                     className="my-2"
                     placeholder="JobHunt, Microsoft etc."
-                    onChange={(e) => setCompanyName(e.target.value)} // update companyName state with current input value on every keystroke
+                    onChange={(e) => setCompanyName(e.target.value)} // update value of 'companyName' state with the value entered by user
                 />
+                
                 <div className='flex items-center gap-2 my-10'>
                     <Button
                         variant="outline"
-                        onClick={() => navigate("/admin/companies")} // navigate back to main companies page when cancel button is clicked
+                        onClick={() => navigate("/admin/companies")} // clicking this button takes user to the page containing details of companies of the user
                     >
                         Cancel
                     </Button>
                     <Button
-                        onClick={registerNewCompany} // trigger registerNewCompany function to create a new company on button click
+                        onClick={registerNewCompany} // clicking this button calls 'registerNewCompany' function to register the new company
                     >
                         Continue
                     </Button>
@@ -73,4 +76,4 @@ const CompanyCreate = () => { // define a functional component named 'CompanyCre
     )
 }
 
-export default CompanyCreate // export CompanyCreate component as default to make it accessible in route configuration
+export default CompanyCreate

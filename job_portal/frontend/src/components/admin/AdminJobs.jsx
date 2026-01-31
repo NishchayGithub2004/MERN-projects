@@ -1,46 +1,47 @@
-import React, { useEffect, useState } from 'react' // import react library to create components, useEffect for side effects, and useState for local state management
-import Navbar from '../shared/Navbar' // import Navbar component to display top navigation bar
-import { Input } from '../ui/input' // import Input component from UI library to allow user text input
-import { Button } from '../ui/button' // import Button component from UI library to create clickable buttons
-import { useNavigate } from 'react-router-dom' // import useNavigate hook to programmatically redirect users between routes
-import { useDispatch } from 'react-redux' // import useDispatch hook to dispatch actions to redux store
-import AdminJobsTable from './AdminJobsTable' // import AdminJobsTable component to display list of admin job records
-import useGetAllAdminJobs from '@/hooks/useGetAllAdminJobs' // import custom hook that fetches all admin job data from api
-import { setSearchJobByText } from '@/redux/jobSlice' // import action creator to update job search filter text in redux store
+import React, { useEffect, useState } from 'react' // import 'useEffect' hook to run side-effects and 'useState' hook to create an manage state variables
+import Navbar from '../shared/Navbar'
+import { Input } from '../ui/input'
+import { Button } from '../ui/button'
+import { useNavigate } from 'react-router-dom' // import 'useNavigate' hook from 'react-router-dom' library to navigate to different pages
+import { useDispatch } from 'react-redux' // import 'useDispatch' hook to dispatch actions to redux slices to change values to state variables
+import AdminJobsTable from './AdminJobsTable'
+import useGetAllAdminJobs from '@/hooks/useGetAllAdminJobs' // import custom hook 'useGetAllAdminJobs' to get all jobs created by the user
+import { setSearchJobByText } from '@/redux/jobSlice' // import 'setSearchJobByText' function from 'jobSlice' of redux store to search job by text
 
-const AdminJobs = () => { // define a functional component named 'AdminJobs' to manage job listings and filter input logic
-    useGetAllAdminJobs() // call custom hook to fetch all admin jobs when the component mounts
+const AdminJobs = () => { // create a functional component called 'AdminJobs' to render and see jobs created by the user
+    useGetAllAdminJobs() // call custom hook 'useGetAllAdminJobs' to get all jobs created by the user
 
-    const [input, setInput] = useState("") // define local state 'input' initialized as empty string to store user search text and 'setInput' function to update it
+    const [input, setInput] = useState("") // create a state variable 'input' to store the text entered by the user with initial value of empty string and a function called 'setInput' to change its value
 
-    const navigate = useNavigate() // call useNavigate to get navigation function for route redirection
+    const navigate = useNavigate() // create an instance of 'useNavigate' hook to use it to navigate b/w different pages
 
-    const dispatch = useDispatch() // call useDispatch to get dispatch function for sending redux actions
+    const dispatch = useDispatch() // create an instance of 'useDispatch' hook to use it to dispatch actions to update value of state variables
 
-    useEffect(() => { // define side effect that executes whenever 'input' changes
-        dispatch( // call dispatch to send action to redux store
-            setSearchJobByText( // call action creator to generate an action for updating search text
-                input // pass current input state as payload to update search filter value in redux
-            )
-        ) // close dispatch call
-    }, [input]) // specify dependency array containing 'input' so effect re-runs when user modifies search text
+    // create a side-effect that re-runs when value of 'input' variable changes, it dispatches new value of 'input' to 'searchJobByText' state using 'setSearchJobByText' function
+    
+    useEffect(() => {
+        dispatch(setSearchJobByText(input))
+    }, [input])
 
-    return ( // return jsx structure to render navbar, search input, button, and job table
+    return (
         <div>
-            <Navbar /> 
+            <Navbar />
+
             <div className='max-w-6xl mx-auto my-10'>
                 <div className='flex items-center justify-between my-5'>
-                    <Input 
+                    <Input
                         className="w-fit"
                         placeholder="Filter by name, role"
-                        onChange={(e) => setInput(e.target.value)} // update input state with new text when user types in search field
+                        onChange={(e) => setInput(e.target.value)} // when value of this input field changes, update value of 'input' state variable
                     />
-                    <Button onClick={() => navigate("/admin/jobs/create")}>New Jobs</Button> {/* navigate to job creation page when button is clicked */}
+                    <Button onClick={() => navigate("/admin/jobs/create")}> {/* when this button is clicked, navigate to the page where user can create the job */}
+                        New Jobs
+                    </Button>
                 </div>
-                <AdminJobsTable /> {/* render table component displaying all admin job listings */}
+                <AdminJobsTable />
             </div>
         </div>
     )
 }
 
-export default AdminJobs // export AdminJobs component as default for use in other modules
+export default AdminJobs

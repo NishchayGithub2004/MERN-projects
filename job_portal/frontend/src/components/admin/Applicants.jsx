@@ -1,49 +1,49 @@
-import React, { useEffect } from 'react' // import react library to create components and useEffect hook to handle side effects like api calls
-import Navbar from '../shared/Navbar' // import Navbar component to render top navigation bar
-import ApplicantsTable from './ApplicantsTable' // import ApplicantsTable component to display applicants list
-import axios from 'axios' // import axios library to perform http requests to backend
-import { APPLICATION_API_END_POINT } from '@/utils/constant' // import constant variable storing base url for application related api endpoints
-import { useParams } from 'react-router-dom' // import useParams hook to access dynamic route parameters such as job id
-import { useDispatch, useSelector } from 'react-redux' // import useDispatch to send actions and useSelector to access redux store data
-import { setAllApplicants } from '@/redux/applicationSlice' // import redux action creator to update applicants list in global store
+import React, { useEffect } from 'react' // import 'useEffect' hook to run side-effects
+import Navbar from '../shared/Navbar'
+import ApplicantsTable from './ApplicantsTable'
+import axios from 'axios' // import 'axios' library to make HTTP requests to the backend
+import { APPLICATION_API_END_POINT } from '@/utils/constant' // import the URL to make applications related backend request to
+import { useParams } from 'react-router-dom' // import 'useParams' hook from 'react-router-dom' library to get URL parameters and their values
+import { useDispatch, useSelector } from 'react-redux' // from 'react-redux' library, import 'useDispatch' hook to dispatch actions through functions to update value of state variables and 'useSelector' hook to access state variables of slices of redux store
+import { setAllApplicants } from '@/redux/applicationSlice' // import 'setAllApplicants' function from 'applicationSlice' to update value of 'applicants' state variable
 
-const Applicants = () => { // define a functional component named 'Applicants' to display job applicants for a specific job
-    const params = useParams() // call useParams hook to get dynamic route params like job id from url
+const Applicants = () => { // create a functional component called 'Applicants' 
+    const params = useParams() // create an instance of 'useParams' hook to use it to get URL parameters and their values
 
-    const dispatch = useDispatch() // call useDispatch to get dispatch function for sending redux actions
+    const dispatch = useDispatch() // create an instance of 'useDispatch' hook to use it to dispatch actions through functions to update value of state variables
 
-    const { applicants } = useSelector(store => store.application) // destructure 'applicants' object from 'application' slice in redux store to access applicants data
+    const { applicants } = useSelector(store => store.application) // import 'applicants' object from 'application' slice of redux store to get applications data
 
-    useEffect(() => { // define side effect to fetch applicants when component mounts
-        const fetchAllApplicants = async () => { // define async function to make api request and handle response
-            try { 
-                const res = await axios.get( // make get request to backend server to fetch applicants data for a job
-                    `${APPLICATION_API_END_POINT}/${params.id}/applicants`, // dynamically build api endpoint using job id from route params
-                    { withCredentials: true } // include credentials for authentication when making api request
-                ) 
-                dispatch( // call dispatch to send redux action with fetched data
-                    setAllApplicants( // call action creator to create redux action for updating applicants data
-                        res.data.job // pass job object from api response which contains applicants array as payload
-                    )
-                ) 
-            } catch (error) { // handle error if api call fails
-                console.log(error) // log error object to console for debugging purpose
+    useEffect(() => { // use 'useEffect' hook to run side-effects
+        const fetchAllApplicants = async () => { // create a function called 'fetchAllApplicants' to fetch all applicants
+            try {
+                const res = await axios.get( // make a GET request to the backend to fetch all applicants
+                    `${APPLICATION_API_END_POINT}/${params.id}/applicants`, // URL to make backend request to
+                    { withCredentials: true } // send cookies with the request for authentication
+                )
+
+                dispatch(setAllApplicants(res.data.job)) // dispatch response data of the backend to 'applicants' state using 'setAllApplicants' function
+            } catch (error) { // if any error occurs while fetching all applications
+                console.log(error) // log the error to the console to know what error occured
             }
-        } 
-        fetchAllApplicants() // call the async function to initiate api call and fetch applicants
-    }, []) // provide empty dependency array so effect runs only once when component first renders
+        }
 
-    return ( // return jsx to render navbar, heading, and applicants table
+        fetchAllApplicants() // call the function to execute it
+    }, []) // this side-effect runs only once (when the component mounts)
+
+    return (
         <div>
-            <Navbar /> 
+            <Navbar />
+
             <div className='max-w-7xl mx-auto'>
                 <h1 className='font-bold text-xl my-5'>
-                    Applicants {applicants?.applications?.length} 
-                </h1> 
-                <ApplicantsTable /> 
+                    Applicants {applicants?.applications?.length} {/* render the number of applicants for a job */}
+                </h1>
+
+                <ApplicantsTable /> {/* render the table of details of all applicants */}
             </div>
         </div>
     )
 }
 
-export default Applicants // export Applicants component as default to use it in other parts of the app
+export default Applicants

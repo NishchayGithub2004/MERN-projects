@@ -1,21 +1,23 @@
-import { useEffect } from "react" // import useEffect hook to perform a side effect after component renders
-import { useSelector } from "react-redux" // import useSelector hook to access user data from Redux store
-import { useNavigate } from "react-router-dom" // import useNavigate hook to enable programmatic route navigation
+import { useEffect } from "react" // import 'useEffect' hook to run side-effects
+import { useSelector } from "react-redux" // import 'useSelector' hook from 'react-redux' library to access states and functions from redux slice of redux store
+import { useNavigate } from "react-router-dom" // import 'useNavigate' hook from 'react-router-dom' library to navigate b/w different pages
 
-const ProtectedRoute = ({ children }) => { // define a functional component named 'ProtectedRoute' to guard routes and render children only if user is authorized
-    const { user } = useSelector(store => store.auth) // extract user object from Redux store's auth slice using useSelector hook
+const ProtectedRoute = ({ children }) => { // create a functional component named 'ProtectedRoute' to guard routes and render children only if user is authorized
+    const { user } = useSelector(store => store.auth) // extract 'user' object from Redux store's auth slice using useSelector hook
 
-    const navigate = useNavigate() // call useNavigate to get navigation function used for redirecting unauthorized users
+    const navigate = useNavigate() // create an instance of 'useNavigate' hook to use it to navigate to different pages
 
-    useEffect(() => { // define side effect to check user authentication and role after component mounts
-        if (user === null || user.role !== 'recruiter') navigate("/") // redirect to home page if no user is logged in or role is not recruiter
-    }, []) // include empty dependency array to run the effect only once after initial render
+    // create a side-effect that runs only once (when the component mounts), if the user is not available or not a recruiter, redirect to home page
 
-    return ( // return child components wrapped inside fragment if authorization conditions are met
+    useEffect(() => {
+        if (user === null || user.role !== 'recruiter') navigate("/")
+    }, [])
+
+    return (
         <>
-            {children} {/* render child components passed to ProtectedRoute when user passes authentication check */}
+            {children} {/* render the JSX related to the recruiter */}
         </>
     )
 }
 
-export default ProtectedRoute // export ProtectedRoute component as default to use it for route protection elsewhere in app
+export default ProtectedRoute

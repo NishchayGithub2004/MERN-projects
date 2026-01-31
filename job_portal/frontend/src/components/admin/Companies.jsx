@@ -1,46 +1,48 @@
-import React, { useEffect, useState } from 'react' // import React to define a component and include useEffect for handling side effects and useState for managing local state
-import Navbar from '../shared/Navbar' // import Navbar component to render the top navigation bar for the page
-import { Input } from '../ui/input' // import Input component to take user input for company search
-import { Button } from '../ui/button' // import Button component to trigger actions on click
-import CompaniesTable from './CompaniesTable' // import CompaniesTable component to display fetched list of companies in tabular form
-import { useNavigate } from 'react-router-dom' // import useNavigate hook to programmatically redirect user to a new route
-import useGetAllCompanies from '@/hooks/useGetAllCompanies' // import custom hook to fetch all company records from backend API
-import { useDispatch } from 'react-redux' // import useDispatch hook to obtain dispatch function for Redux actions
-import { setSearchCompanyByText } from '@/redux/companySlice' // import Redux action to update company search text in global state
+import React, { useEffect, useState } from 'react' // import 'useEffect' hook to run side-effects and 'useState' hook to create an manage state variables
+import Navbar from '../shared/Navbar'
+import { Input } from '../ui/input'
+import { Button } from '../ui/button'
+import CompaniesTable from './CompaniesTable'
+import { useNavigate } from 'react-router-dom' // import 'useNavigate' hook from 'react-router-dom' library to navigate to different pages
+import useGetAllCompanies from '@/hooks/useGetAllCompanies' // import custom hook 'useGetAllCompanies' to get all companies in the database
+import { useDispatch } from 'react-redux' // import 'useDispatch' hook from 'react-redux' library to dispatch actions to update values of state variables
+import { setSearchCompanyByText } from '@/redux/companySlice' // import 'setSearchCompanyByText' function from 'companySlice' of redux store to search job by text
 
-const Companies = () => { // define a functional component named 'Companies' to manage and display company list with search functionality
-    useGetAllCompanies(); // call custom hook to fetch all companies when the component mounts to populate the table data
+const Companies = () => { // create a functional component named 'Companies' to render all companies in the database
+    useGetAllCompanies() // call custom hook 'useGetAllCompanies' to get all companies in the database
 
-    const [input, setInput] = useState("") // declare state variable 'input' with initial value as empty string to store search text and 'setInput' to update it dynamically
+    const [input, setInput] = useState("") // create a state variable 'input' to store the text entered by the user with initial value of empty string and a function called 'setInput' to change its value
 
-    const navigate = useNavigate() // call useNavigate to get navigation function that enables route changes programmatically
+    const navigate = useNavigate() // create an instance of 'useNavigate' hook to use it to navigate b/w different pages
 
-    const dispatch = useDispatch() // call useDispatch to get function that allows sending Redux actions to the store
+    const dispatch = useDispatch() // create an instance of 'useDispatch' hook to use it to dispatch actions to update values of state variables
 
-    useEffect(() => { // define side effect to execute whenever input value changes
-        dispatch( // call dispatch to send Redux action for updating search filter text
-            setSearchCompanyByText( // call Redux action creator that generates an action with input text as payload
-                input // pass current input value to update search text in Redux state
-            )
-        )
-    }, [input]) // include input as dependency so this effect runs only when input value changes
+    // create a side-effect that re-runs when value of 'input' variable changes, it dispatches new value of 'input' to 'searchCompanyByText' state using 'setSearchCompanyByText' function
 
-    return ( // return the component UI structure to render navigation bar, search field, button, and company table
+    useEffect(() => {
+        dispatch(setSearchCompanyByText(input))
+    }, [input])
+
+    return (
         <div>
-            <Navbar /> 
+            <Navbar />
+            
             <div className='max-w-6xl mx-auto my-10'>
                 <div className='flex items-center justify-between my-5'>
                     <Input
                         className="w-fit"
                         placeholder="Filter by name"
-                        onChange={(e) => setInput(e.target.value)} // update input state whenever user types a character in input field
+                        onChange={(e) => setInput(e.target.value)} // when value of this input field changes, update value of 'input' state variable
                     />
-                    <Button onClick={() => navigate("/admin/companies/create")}>New Company</Button> {/* navigate to company creation page when the button is clicked */}
+                    <Button onClick={() => navigate("/admin/companies/create")}> {/* when this button is clicked, navigate to the page where user can create the company */}
+                        New Company
+                    </Button>
                 </div>
-                <CompaniesTable /> {/* render the CompaniesTable component to display list of all fetched companies */}
+                
+                <CompaniesTable /> {/* render the table of companies and their details */}
             </div>
         </div>
     )
 }
 
-export default Companies // export Companies component as default to make it usable in other modules
+export default Companies

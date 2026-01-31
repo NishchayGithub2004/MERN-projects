@@ -1,31 +1,34 @@
-import React, { useEffect, useState } from 'react' // import react library to create components, useEffect for running side effects, and useState for managing local state
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '../ui/table' // import table ui components to display job listings in a tabular structure
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover' // import popover ui components to show dropdown actions for each job
-import { Edit2, Eye, MoreHorizontal } from 'lucide-react' // import icons representing edit, view, and menu options
-import { useSelector } from 'react-redux' // import useSelector hook to read state data from redux store
-import { useNavigate } from 'react-router-dom' // import useNavigate hook to programmatically navigate between pages
+import React, { useEffect, useState } from 'react' // import 'useEffect' hook to run side-effects and 'useState' hook to create an manage state variables
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
+import { Edit2, Eye, MoreHorizontal } from 'lucide-react'
+import { useSelector } from 'react-redux' // import 'useSelector' hook from 'react-redux' library to access redux slices from redux store
+import { useNavigate } from 'react-router-dom' // import 'useNavigate' hook from 'react-router-dom' library to navigate user to different pages
 
-const AdminJobsTable = () => { // define a functional component named 'AdminJobsTable' to display and filter the list of admin jobs
-    const { allAdminJobs, searchJobByText } = useSelector(store => store.job) // extract 'allAdminJobs' array and 'searchJobByText' filter text from redux job slice
+const AdminJobsTable = () => { // create a functional component called 'AdminJobsTable' to render table of jobs created by the admin
+    const { allAdminJobs, searchJobByText } = useSelector(store => store.job) // extract 'allAdminJobs' and 'searchJobByText' states from 'job' slice of redux store
+    // first state contains all jobs posted by the user, and second state contains search string used to search for a job
 
-    const [filterJobs, setFilterJobs] = useState(allAdminJobs) // define state variable 'filterJobs' initialized with all jobs to hold currently filtered jobs and 'setFilterJobs' to update it
+    const [filterJobs, setFilterJobs] = useState(allAdminJobs) // create a state variable 'filterJobs' to store the filtered jobs with initial value of 'allAdminJobs' ie all jobs posted by the user and a function called 'setFilterJobs' to change its value
 
-    const navigate = useNavigate() // call useNavigate hook to get navigation function for redirecting user to specific pages
+    const navigate = useNavigate() // create an instance of 'useNavigate' hook to use it to navigate to different pages
 
-    useEffect(() => { // define side effect to update filtered job list whenever job data or search text changes
-        const filteredJobs = allAdminJobs.filter((job) => { // create a new array 'filteredJobs' by filtering 'allAdminJobs' based on search text
-            if (!searchJobByText) { // check if search text is empty meaning no filter is applied
-                return true // include all jobs when search text is empty
-            }
-            return ( // otherwise check if job title or company name includes search text
-                job?.title?.toLowerCase().includes(searchJobByText.toLowerCase()) || // include job if its title matches search text ignoring case
-                job?.company?.name.toLowerCase().includes(searchJobByText.toLowerCase()) // include job if its company name matches search text ignoring case
+    // create a side-effect that runs when jobs posted by user or search string to search for a job changes, iterate over 'allAdminJobs' ie all jobs created by the user
+    // if 'searchJobByText' is empty ie search string is not provided, return all jobs, else return jobs whose title or company name matches the search string (make it case-insensitive by making all searches in lower case)
+    
+    useEffect(() => {
+        const filteredJobs = allAdminJobs.filter((job) => {
+            if (!searchJobByText) return true
+            
+            return (
+                job?.title?.toLowerCase().includes(searchJobByText.toLowerCase()) ||
+                job?.company?.name.toLowerCase().includes(searchJobByText.toLowerCase())
             )
         })
-        setFilterJobs(filteredJobs) // update local state 'filterJobs' with new filtered results
-    }, [allAdminJobs, searchJobByText]) // run effect whenever 'allAdminJobs' or 'searchJobByText' changes to keep job list updated
+        setFilterJobs(filteredJobs)
+    }, [allAdminJobs, searchJobByText])
 
-    return ( // return jsx to render job table with interactive actions
+    return (
         <div>
             <Table>
                 <TableCaption>A list of your recent posted jobs</TableCaption>
@@ -38,40 +41,41 @@ const AdminJobsTable = () => { // define a functional component named 'AdminJobs
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {
-                        filterJobs?.map((job) => ( // iterate over 'filterJobs' array to render each job record in the table
-                            <tr key={job._id}> 
-                                <TableCell>{job?.company?.name}</TableCell>
-                                <TableCell>{job?.title}</TableCell>
-                                <TableCell>{job?.createdAt.split("T")[0]}</TableCell> 
-                                <TableCell className="text-right cursor-pointer">
-                                    <Popover>
-                                        <PopoverTrigger><MoreHorizontal /></PopoverTrigger> 
-                                        <PopoverContent className="w-32">
-                                            <div 
-                                                onClick={() => navigate(`/admin/companies/${job._id}`)} // navigate to company edit page using the job's id when edit option is selected
-                                                className='flex items-center gap-2 w-fit cursor-pointer'
-                                            >
-                                                <Edit2 className='w-4' />
-                                                <span>Edit</span>
-                                            </div>
-                                            <div 
-                                                onClick={() => navigate(`/admin/jobs/${job._id}/applicants`)} // navigate to applicants list page for the selected job id when applicants option is clicked
-                                                className='flex items-center w-fit gap-2 cursor-pointer mt-2'
-                                            >
-                                                <Eye className='w-4' />
-                                                <span>Applicants</span>
-                                            </div>
-                                        </PopoverContent>
-                                    </Popover>
-                                </TableCell>
-                            </tr>
-                        ))
-                    }
+                    {filterJobs?.map((job) => ( // iterate over jobs filtered by the search string
+                        <tr key={job._id}> {/* unique ID of the job works as its unique identifier in the table */}
+                            {/* for current row, render company name, job title, and date of creation as cells */}
+                            <TableCell>{job?.company?.name}</TableCell>
+                            <TableCell>{job?.title}</TableCell>
+                            <TableCell>{job?.createdAt.split("T")[0]}</TableCell>
+                            <TableCell className="text-right cursor-pointer">
+                                <Popover>
+                                    <PopoverTrigger>
+                                        <MoreHorizontal />
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-32">
+                                        <div
+                                            onClick={() => navigate(`/admin/companies/${job._id}`)} // clicking on 'Edit' button takes user to the job details
+                                            className='flex items-center gap-2 w-fit cursor-pointer'
+                                        >
+                                            <Edit2 className='w-4' />
+                                            <span>Edit</span>
+                                        </div>
+                                        <div
+                                            onClick={() => navigate(`/admin/jobs/${job._id}/applicants`)} // clicking on 'Applicants' button takes user to list of applicants for the job
+                                            className='flex items-center w-fit gap-2 cursor-pointer mt-2'
+                                        >
+                                            <Eye className='w-4' />
+                                            <span>Applicants</span>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                            </TableCell>
+                        </tr>
+                    ))}
                 </TableBody>
             </Table>
         </div>
     )
 }
 
-export default AdminJobsTable // export AdminJobsTable component as default to make it reusable in other modules
+export default AdminJobsTable
